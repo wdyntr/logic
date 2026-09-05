@@ -1,0 +1,177 @@
+* {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: monospace;
+    margin: 0;
+    padding: 24px;
+    background: #f5f5f5;
+  }
+
+  h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+
+  /* =========================
+     LAYOUT UTAMA
+     ========================= */
+
+  .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: start;
+  }
+
+  .left-panel,
+  .right-panel {
+    min-width: 0;
+  }
+
+  /* =========================
+     PANEL
+     ========================= */
+
+  .panel {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+
+  .right-panel {
+    position: sticky;
+    top: 20px;
+  }
+
+  /* =========================
+     FORM
+     ========================= */
+
+  fieldset {
+    margin: 0 0 20px 0;
+    padding: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+
+  fieldset:last-child {
+    margin-bottom: 0;
+  }
+
+  legend {
+    padding: 0 8px;
+    font-weight: bold;
+  }
+
+  label {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-weight: bold;
+  }
+
+  input {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 14px;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: #666;
+  }
+
+  button {
+    margin-top: 12px;
+    padding: 9px 16px;
+    cursor: pointer;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background: #333;
+    color: white;
+    font-family: monospace;
+  }
+
+  button:hover {
+    background: #555;
+  }
+
+  /* =========================
+     BASE URL
+     ========================= */
+
+  .base-url {
+    margin-bottom: 20px;
+  }
+
+  /* =========================
+     RESPONSE
+     ========================= */
+
+  .response-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .response-header h3 {
+    margin: 0;
+  }
+
+  .status {
+    font-weight: bold;
+    margin: 8px 0;
+  }
+
+  .response-container {
+    height: calc(100vh - 130px);
+    min-height: 400px;
+    max-height: calc(100vh - 80px);
+    overflow: auto;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #f0f0f0;
+  }
+
+  pre {
+    margin: 0;
+    padding: 14px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* =========================
+     RESPONSIVE
+     ========================= */
+
+  @media (max-width: 800px) {
+    body {
+      padding: 12px;
+    }
+
+    .container {
+      grid-template-columns: 1fr;
+    }
+
+    .right-panel {
+      position: static;
+    }
+
+    .response-container {
+      height: 400px;
+      max-height: 400px;
+    }
+  }

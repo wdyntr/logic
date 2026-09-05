@@ -1,0 +1,36 @@
+{
+  "name": "logic",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npx prisma generate && ts-node-dev --poll src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.x",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.2",
+    "ejs": "^3.1.10",
+    "express": "^4.x",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.0",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/ejs": "^3.1.5",
+    "@types/express": "^4.x",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20.x",
+    "@types/pg": "^8.23.1",
+    "prisma": "^7.x",
+    "ts-node-dev": "^2.x",
+    "typescript": "^5.x"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Logic Project",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "logic",
+  "workspaceFolder": "/app",
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "ms-vscode.vscode-typescript-next"]
+    }
+  }
+}

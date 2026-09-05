@@ -1,0 +1,20 @@
+
+# Dependensi Node.js
+node_modules/
+npm-debug.log*
+
+# File lingkungan / data sensitif (SANGAT WAJIB!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# File log dan debug Prisma (opsional tapi disarankan)
+/prisma/migrations/
+# Catatan: Jangan masukkan file schema.prisma ke gitignore, schema wajib di-push!
+
+# Hasil kompilasi TypeScript (jika Anda nge-build ke folder dist/out)
+dist/
+build/
+

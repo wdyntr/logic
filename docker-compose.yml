@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  logic:
+    container_name: logic
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./:/app:Z
+      # Pastikan anonymous volume untuk node_modules mengarah ke /app
+      - /app/node_modules
+    environment:
+      - DATABASE_URL=postgresql://root:root@logic-psql:5432/logic-db?schema=public
+    depends_on:
+      - logic-psql
+
+  logic-psql:
+    image: docker.io/library/postgres:16-alpine
+    container_name: logic-psql
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=logic-db
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    volumes:
+      - logic-db:/var/lib/postgresql/data:Z
+
+volumes:
+  logic-db:

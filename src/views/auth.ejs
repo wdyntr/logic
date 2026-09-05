@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auth - SaaS API</title>
+  <link href="/css/base.css" rel="stylesheet" />
+  <style>
+    nav {
+      margin-bottom: 20px;
+      padding: 10px 0;
+      border-bottom: 1px solid #ddd;
+    }
+
+    nav a {
+      margin-right: 16px;
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+      font-family: monospace;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    nav a.active {
+      border-bottom: 2px solid #333;
+    }
+  </style>
+</head>
+
+<body>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/auth" class="active">Auth</a>
+  </nav>
+
+  <h2>Autentikasi</h2>
+
+  <div class="container">
+    <div class="left-panel">
+      <div class="panel">
+        <div class="base-url">
+          <label>Base URL API</label>
+          <input id="baseUrl" />
+        </div>
+
+        <fieldset>
+          <legend>Register</legend>
+          <label>Nama</label>
+          <input id="reg_name" />
+          <label>Email</label>
+          <input id="reg_email" />
+          <label>Password</label>
+          <input id="reg_password" type="password" />
+          <button onclick="register()">Register</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>Login</legend>
+          <label>Email</label>
+          <input id="login_email" />
+          <label>Password</label>
+          <input id="login_password" type="password" />
+          <button onclick="login()">Login</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>User Aktif</legend>
+          <p id="active-user">Belum Login</p>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="panel">
+        <div class="response-header">
+          <h3>Response Terakhir</h3>
+        </div>
+        <p class="status" id="status">Belum ada request</p>
+        <div class="response-container">
+          <pre id="output">(belum ada request)</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.API_BASE_URL = window.location.origin;
+  </script>
+  <script src="/js/auth.js"></script>
+</body>
+
+</html>
