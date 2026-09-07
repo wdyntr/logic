@@ -26,3 +26,12 @@ model Todo {
 
   @@map ("todos")
 }
+
+model IdempotencyKey {
+  key         String   @id @db.VarChar(255)
+  response    Json
+  statusCode  Int
+  createdAt   DateTime @default(now())
+  @@map("idempotency_keys")
+  @@index([createdAt])  // For cleanup
+}

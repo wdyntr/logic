@@ -1,31 +1,43 @@
 let csrfToken = null;
 
-document.getElementById('baseUrl').value = window.API_BASE_URL || window.location.origin;
+window.addEventListener("DOMContentLoaded", async () => {
+  await checkMe();
+});
+
+document.getElementById("baseUrl").value =
+  window.API_BASE_URL || window.location.origin;
 
 function baseUrl() {
-  return (window.API_BASE_URL || document.getElementById("baseUrl").value).replace(/\/$/, "");
+  return (
+    window.API_BASE_URL || document.getElementById("baseUrl").value
+  ).replace(/\/$/, "");
 }
 
 function showResult(status, data) {
   document.getElementById("status").textContent = "Status: " + status;
   try {
-    document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+    document.getElementById("output").textContent = JSON.stringify(
+      data,
+      null,
+      2,
+    );
   } catch {
     document.getElementById("output").textContent = String(data);
   }
 }
 
-async function callApi(path, method, body, retry = true) {
-  const headers = { "Content-Type": "application/json" };
+async function callApi(path, method, body, options = {}) {
+  const { retry = true, headers = {} } = options
+  const requestHeaders = { "Content-Type": "application/json", ...headers };
 
   if (["POST", "PUT", "DELETE", "PATCH"].includes(method) && csrfToken) {
-    headers["x-csrf-token"] = csrfToken;
+    requestHeaders["x-csrf-token"] = csrfToken;
   }
 
   try {
     const res = await fetch(baseUrl() + path, {
       method,
-      headers,
+      headers: requestHeaders,
       credentials: "include",
       body: body ? JSON.stringify(body) : undefined,
     });
@@ -58,11 +70,14 @@ async function register() {
     password: document.getElementById("reg_password").value,
   };
 
-  const res = await callApi("/api/register", "POST", body);
+  const key = crypto.randomUUID()
+
+  const res = await callApi("/api/register", "POST", body, {
+    headers: { 'Idempotency-key': key }
+  });
   if (res && res.status === 201) {
     document.getElementById("active-user").textContent =
       `${res.data.user.name} (${res.data.user.email})`;
-
   } else {
     document.getElementById("active-user").textContent = "Belum Login";
   }
@@ -74,12 +89,30 @@ async function login() {
     password: document.getElementById("login_password").value,
   };
 
-  const res = await callApi("/api/login", "POST", body);
+  const key = crypto.randomUUID()
+
+  const res = await callApi("/api/login", "POST", body, {
+    headers: { 'Idempotency-key': key }
+  });
+
   if (res && res.status === 200) {
     document.getElementById("active-user").textContent =
       `${res.data.user.name} (${res.data.user.email})`;
-
   } else {
     document.getElementById("active-user").textContent = "Belum Login";
+  }
+}
+
+async function checkMe() {
+  const userEl = document.getElementById("active-user");
+  userEl.textContent = "Memuat...";  // Loading state
+
+  const result = await callApi("/api/me", "GET");
+  if (result && result.status === 200) {
+    userEl.textContent = `${result.data.user.name} (${result.data.user.email})`;
+  } else if (result && result.status === 401) {
+    userEl.textContent = "Belum Login";
+  } else {
+    userEl.textContent = "Error memuat user";  // Server error
   }
 }

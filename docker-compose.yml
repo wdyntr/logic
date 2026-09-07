@@ -11,8 +11,8 @@ services:
       - ./:/app:Z
       # Pastikan anonymous volume untuk node_modules mengarah ke /app
       - /app/node_modules
-    environment:
-      - DATABASE_URL=postgresql://root:root@logic-psql:5432/logic-db?schema=public
+    env_file:
+      - .env.docker
     depends_on:
       - logic-psql
 

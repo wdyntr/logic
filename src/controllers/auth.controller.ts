@@ -2,8 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { prisma } from "../databases/db";
 import { generateAccessToken } from "../utils/token";
-
-
+import { AuthRequest } from "../middleware/auth.middleware";
 
 const setAuthCookies = async (res: Response, userId: bigint) => {
   const accessToken = generateAccessToken(userId);
@@ -20,10 +19,15 @@ const setAuthCookies = async (res: Response, userId: bigint) => {
   return { accessToken };
 };
 
-
 export const register = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
+
+    const existing = await prisma.user.findUnique({ where: { email } });
+
+    if (existing)
+      return res.status(400).json({ message: "Email sudah digunakan" });
+
     const hashed = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
@@ -72,6 +76,21 @@ export const login = async (req: Request, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
   res.clearCookie("access_token");
 
-
   res.json({ message: "Logout berhasil" });
+};
+
+export const me = async (req: AuthRequest, res: Response) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.userId },
+  });
+
+  if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
+
+  res.json({
+    user: {
+      id: user.id.toString(),
+      name: user.name,
+      email: user.email,
+    },
+  });
 };
