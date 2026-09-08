@@ -45,46 +45,70 @@ export const store = async (req: AuthRequest, res: Response) => {
     const { name } = req.body;
     const userId = req.userId!;
 
-    
-    const exist = await prisma.todo.findFirst({
-      where: { name, userId },
+    const hasil = await prisma.$transaction(async (tx) => {
+      // Query 1: hitung incomplete todos (dalam transaksi)
+      const hitung = await tx.todo.count({
+        where: { userId, status: false },
+      });
+      if (hitung >= 5) {
+        return null; // signal: limit tercapai
+      }
+      // Query 2: cek duplikat nama (dalam transaksi yang sama)
+      const exist = await tx.todo.findFirst({
+        where: { name, userId },
+      });
+      if (exist) {
+        return "duplicate"; // signal: nama sudah ada
+      }
+      // Query 3: create
+      return await tx.todo.create({
+        data: { userId, name, status: false },
+      });
     });
 
-    if (exist) {
+    if (hasil === null) {
+      return res.status(406).json({ message: "Todo list mencapai limit" });
+    }
+    if (hasil === "duplicate") {
       return res.status(409).json({ message: "Nama todo sudah tersedia" });
     }
 
-    const hasil = await prisma.todo.create({
-      data: { userId, name, status: false },
+    res.status(201).json({
+      message: "Berhasil menyimpan data Todo",
+      data: serializeTodo(hasil),
     });
-
-    if (!hasil)
-      return res.status(409).json({ message: "Gagal menyimpan todo" });
-
-    res.status(201).json({ message: "Berhasil menyimpan data Todo", data: serializeTodo(hasil) });
   } catch (error) {
     return res.status(500).json({ message: `Gagal menyimpan todo ${error}` });
   }
 };
-
 export const toggle = async (req: AuthRequest, res: Response) => {
   try {
     const id = BigInt(req.params.id);
     const userId = req.userId!;
-    const todo = await prisma.todo.findFirst({
-      where: { id, userId },
+
+    const hasil = await prisma.$transaction(async (tx) => {
+      // Query 1: hitung incomplete todos (dalam transaksi)
+      const todo = await tx.todo.findFirst({
+        where: { id, userId },
+      });
+
+      if (!todo) {
+        return 404;
+      }
+
+      return await tx.todo.update({
+        where: { id },
+        data: { status: !todo.status },
+      });
     });
 
-    if (!todo) {
+    if (hasil === 404)
       return res.status(404).json({ message: "Todo tidak ditemukan" });
-    }
 
-    const hasil = await prisma.todo.update({
-      where: { id },
-      data: { status: !todo.status },
+    res.status(200).json({
+      message: "Berhasil toggle status",
+      data: serializeTodo(hasil),
     });
-
-    res.status(200).json({ message: "Berhasil toggle status", data: serializeTodo(hasil) });
   } catch (error) {
     return res.status(500).json({ message: `Gagal toggle todo ${error}` });
   }
@@ -96,33 +120,41 @@ export const update = async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
     const { name, status } = req.body;
 
-    const todo = await prisma.todo.findFirst({
-      where: { id, userId },
-    });
+    const hasil = await prisma.$transaction(async (tx) => {
+      const todo = await tx.todo.findFirst({
+        where: { id, userId },
+      });
 
-    if (!todo) {
+      if (!todo) {
+        return 404;
+      }
+
+      const data: { name?: string; status?: boolean } = {};
+      if (name !== undefined) data.name = name;
+      if (status !== undefined) data.status = status;
+
+      if (Object.keys(data).length === 0) {
+        return 400;
+      }
+
+      return await tx.todo.update({
+        where: { id },
+        data,
+      });
+    });
+    if (hasil === 404)
       return res.status(404).json({ message: "Todo tidak ditemukan" });
-    }
 
-    const data: { name?: string; status?: boolean } = {};
-    if (name !== undefined) data.name = name;
-    if (status !== undefined) data.status = status;
-
-    if (Object.keys(data).length === 0) {
+    if (hasil === 400)
       return res.status(400).json({ message: "Tidak ada data yang diupdate" });
-    }
 
-    const hasil = await prisma.todo.update({
-      where: { id },
-      data,
-    });
-
-    res.status(200).json({ message: "Berhasil update todo", data: serializeTodo(hasil) });
+    res
+      .status(200)
+      .json({ message: "Berhasil update todo", data: serializeTodo(hasil) });
   } catch (error) {
     return res.status(500).json({ message: `Gagal update todo ${error}` });
   }
 };
-
 
 export const destroy = async (req: AuthRequest, res: Response) => {
   const userId = req.userId!;
