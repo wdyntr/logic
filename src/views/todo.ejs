@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Auth - SaaS API</title>
+  <title>Todo List - SaaS API</title>
   <link href="/css/base.css" rel="stylesheet" />
   <style>
     nav {
@@ -34,11 +34,11 @@
 <body>
   <nav>
     <a href="/">Home</a>
-    <a href="/auth" class="active">Auth</a>
-    <a href="/todo" class="">Todo List</a>
+    <a href="/auth">Auth</a>
+    <a href="/todo" class="active">Todo List</a>
   </nav>
 
-  <h2>Autentikasi</h2>
+  <h2>Manajemen Todo</h2>
 
   <div class="container">
     <div class="left-panel">
@@ -47,30 +47,23 @@
           <label>Base URL API</label>
           <input id="baseUrl" />
         </div>
-
         <fieldset>
-          <legend>Register</legend>
-          <label>Nama</label>
-          <input id="reg_name" />
-          <label>Email</label>
-          <input id="reg_email" />
-          <label>Password</label>
-          <input id="reg_password" type="password" />
-          <button onclick="register()">Register</button>
+          <legend>Daftar Todo</legend>
+          <div id="todo-list">
+            
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <button onclick="loadTodo(currentPage - 1)" id="prev-btn" disabled>Prev</button>
+            <span id="page-info" style="font-size: 13px">1 / 1</span>
+            <button onclick="loadTodo(currentPage + 1)" id="next-btn" disabled>Next</button>
+          </div>
         </fieldset>
 
         <fieldset>
-          <legend>Login</legend>
-          <label>Email</label>
-          <input id="login_email" />
-          <label>Password</label>
-          <input id="login_password" type="password" />
-          <button onclick="login()">Login</button>
-        </fieldset>
-
-        <fieldset>
-          <legend>User Aktif</legend>
-          <p id="active-user">Belum Login</p>
+          <legend>Buat Todo</legend>
+          <label>Nama Todo</label>
+          <input id="name" />
+          <button onclick="createTodo()">Buat Todo</button>
         </fieldset>
       </div>
     </div>
@@ -88,10 +81,11 @@
     </div>
   </div>
 
-  <script>
-    window.API_BASE_URL = window.location.origin;
-  </script>
-  <script src="/js/auth.js"></script>
+  <script>window.API_BASE_URL = window.location.origin;</script>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/todo.js"></script>
 </body>
 
 </html>

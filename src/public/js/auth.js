@@ -72,7 +72,7 @@ async function register() {
 
   const key = crypto.randomUUID()
 
-  const res = await callApi("/api/register", "POST", body, {
+  const res = await callApi("/api/auth/register", "POST", body, {
     headers: { 'Idempotency-key': key }
   });
   if (res && res.status === 201) {
@@ -91,7 +91,7 @@ async function login() {
 
   const key = crypto.randomUUID()
 
-  const res = await callApi("/api/login", "POST", body, {
+  const res = await callApi("/api/auth/login", "POST", body, {
     headers: { 'Idempotency-key': key }
   });
 
@@ -107,7 +107,7 @@ async function checkMe() {
   const userEl = document.getElementById("active-user");
   userEl.textContent = "Memuat...";  // Loading state
 
-  const result = await callApi("/api/me", "GET");
+  const result = await callApi("/api/auth/me", "GET");
   if (result && result.status === 200) {
     userEl.textContent = `${result.data.user.name} (${result.data.user.email})`;
   } else if (result && result.status === 401) {

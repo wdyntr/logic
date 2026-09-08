@@ -19,9 +19,9 @@ model Todo {
   id        BigInt    @id @default(autoincrement())
   userId    BigInt    @map("user_id")
   name      String    @db.VarChar(255)
-  created_at DateTime? @map("created_at") @db.Timestamp(0)
+  createdAt DateTime? @map("created_at") @db.Timestamp(0)
   updatedAt  DateTime? @map("updated_at") @db.Timestamp(0)
-  status    Boolean   @default(false) @map("is_default")
+  status    Boolean   @default(false) @map("status")
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map ("todos")

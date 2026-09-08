@@ -12,16 +12,16 @@ export const idempotency = async (
   const scopedKey = `${req.method}:${req.path}:${rawKey}`;
   const cutOff = new Date(Date.now() - 60 * 60 * 1000);
 
-  await prisma.idempotencyKey.deleteMany({
-    where: { key: scopedKey, createdAt: { lt: cutOff } },
-  });
-
   const exist = await prisma.idempotencyKey.findUnique({
     where: { key: scopedKey },
   });
 
   if (exist) {
-    return res.status(exist.statusCode).json(exist.response);
+    if (exist.createdAt < cutOff) {
+      await prisma.idempotencyKey.delete({ where: { key: scopedKey } });
+    } else {
+      return res.status(exist.statusCode).json(exist.response);
+    }
   }
 
   const originalJson = res.json.bind(res);
