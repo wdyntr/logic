@@ -1,13 +1,21 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { prisma } from "../databases/db";
-import { generateAccessToken } from "../utils/token";
+import { generateAccessToken, generateRefreshToken, hashToken, REFRESH_TOKEN_EXPIRY_DAYS } from "../utils/token";
 import { AuthRequest } from "../middleware/auth.middleware";
-import { json, string } from "zod";
-import { updateSchema } from "../validators/auth.validator";
 
 const setAuthCookies = async (res: Response, userId: bigint) => {
   const accessToken = generateAccessToken(userId);
+  const refreshToken = generateRefreshToken()
+
+  const hashedToken = hashToken(refreshToken)
+  await prisma.refreshToken.create({
+    data: {
+      token: hashedToken,
+      userId,
+      expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
+    }
+  })
 
   // untuk web save keduanya di cookie httpOnly
   res.cookie("access_token", accessToken, {
@@ -17,8 +25,16 @@ const setAuthCookies = async (res: Response, userId: bigint) => {
     maxAge: 15 * 60 * 1000,
   });
 
-  // mobile respon do body, biar bisa disimpan manual ke keychain/keystore
-  return { accessToken };
+  res.cookie("refresh_token", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000
+  })
+
+  // mobile respon do body, biar bisa dsimpan manual ke keychain/keystore
+  
+  return { accessToken, refreshToken };
 };
 
 export const register = async (req: Request, res: Response) => {
@@ -76,8 +92,16 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const logout = async (req: Request, res: Response) => {
-  res.clearCookie("access_token");
+  const token = req.cookies?.refresh_token
+  if (token) {
+    await prisma.refreshToken.deleteMany({
+      where: { token: hashToken(token) }
+    })
+  }
 
+  res.clearCookie("access_token");
+  res.clearCookie('refresh_token', { path: '/' })
+  
   res.json({ message: "Logout berhasil" });
 };
 
@@ -144,3 +168,23 @@ export const update = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Gagal update data user" });
   }
 };
+
+export const refresh = async (req: AuthRequest, res: Response) => {
+  const token = req.cookies?.refresh_token;
+  if (!token)
+    return res.status(401).json({ message: "Refresh Token tidak ada" });
+
+  const tokenHash = hashToken(token);
+  const stored = await prisma.refreshToken.findUnique({ where: { token: tokenHash } });
+
+  if (!stored || stored.expiresAt < new Date()) {
+    return res
+      .status(401)
+      .json({ message: 'Refresh token tidak valid atau kadaluarsa' })
+  }
+
+  await prisma.refreshToken.delete({ where: { id: stored.id } })
+  const tokens = await setAuthCookies(res, stored.userId)
+
+  res.json({ message: 'token diperbarui', ...tokens })
+}

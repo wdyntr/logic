@@ -1,6 +1,8 @@
 import jwt  from "jsonwebtoken";
 import crypto from 'crypto'
 
+export const REFRESH_TOKEN_EXPIRY_DAYS = 7;
+
 export const generateAccessToken = (userId: bigint) =>
     jwt.sign({ id: userId.toString() }, process.env.JWT_SECRET!, {expiresIn: '15m'})
 

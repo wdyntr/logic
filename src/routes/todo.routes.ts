@@ -4,10 +4,11 @@ import { idempotency } from "../middleware/idempotency.middleware";
 import { destroy, index, store, toggle, update } from "../controllers/todo.controller";
 import { validate, validateParams } from "../middleware/validate.middleware";
 import { createTodoSchema, updateTodoSchema, todoIdParamSchema } from "../validators/todo.validator";
+import { apiLimiter } from "../middleware/rateLimit.middleware";
 
 const router = Router();
 
-router.use(authenticate);
+router.use(authenticate, apiLimiter);
 
 router.get("/", index);
 router.post("/", validate(createTodoSchema), idempotency, store);

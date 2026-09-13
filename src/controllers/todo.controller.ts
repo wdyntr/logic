@@ -61,7 +61,11 @@ export const store = async (req: AuthRequest, res: Response) => {
     if (cek === 406) return res.status(406).json({ message: "Todo list mencapai limit" });
 
     res.status(201).json({ message: "Berhasil menyimpan data Todo", data: serializeTodo(cek) });
-  } catch (error) {
+  } catch (error:any) {
+    if (error?.code === "2034") {
+      return res.status(406).json({ message: "Email sudah digunakan" });
+    }
+    
     return res.status(500).json({ message: `Gagal menyimpan todo ${error}` });
   }
 };
