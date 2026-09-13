@@ -72,6 +72,22 @@
           <legend>User Aktif</legend>
           <p id="active-user">Belum Login</p>
         </fieldset>
+
+        <legend><a href="#" class="toggle-edit" onclick="toggleEditProfile(); return false;">Edit Profile &gt;</a>
+        </legend>
+
+        <fieldset id="edit-profile-form" style="display: none;">
+          <legend>Update Profile</legend>
+          <label>Nama</label>
+          <input id="upd_name" />
+          <label>Email</label>
+          <input id="upd_email" />
+          <label>Password Lama</label>
+          <input id="upd_current_password" type="password" />
+          <label>Password Baru</label>
+          <input id="upd_new_password" type="password" />
+          <button onclick="updateProfile()">Simpan</button>
+        </fieldset>
       </div>
     </div>
 

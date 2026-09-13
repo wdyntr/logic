@@ -116,3 +116,35 @@ async function checkMe() {
     userEl.textContent = "Error memuat user";  // Server error
   }
 }
+
+function toggleEditProfile() {
+  const form = document.getElementById("edit-profile-form");
+  const link = document.querySelector(".toggle-edit");
+  
+  if (form.style.display === "none") {
+    form.style.display = "block";
+    link.textContent = "Edit Profile <";
+  } else {
+    form.style.display = "none";
+    link.textContent = "Edit Profile >";
+  }
+}
+
+async function updateProfile() {
+  const body = {};
+  const name = document.getElementById("upd_name").value;
+  const email = document.getElementById("upd_email").value;
+  const currentPassword = document.getElementById("upd_current_password").value;
+  const newPassword = document.getElementById("upd_new_password").value;
+
+  if (name) body.name = name;
+  if (email) body.email = email;
+  if (newPassword) {
+    body.password = newPassword;
+    body.currentPassword = currentPassword;
+  }
+
+  if (Object.keys(body).length === 0) return;
+
+  await callApi("/api/auth/me", "PATCH", body);
+}

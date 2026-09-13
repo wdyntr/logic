@@ -7,7 +7,8 @@
     "outDir": "./dist",
     "rootDir": "./",
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["jest", "node"]   // ← tambahkan ini
   },
   "include": ["src", "prisma.config.ts"]
 }

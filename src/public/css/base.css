@@ -292,3 +292,16 @@ pre {
     max-height: 400px;
   }
 }
+
+.toggle-edit {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.toggle-edit:hover {
+  text-decoration: underline;
+}

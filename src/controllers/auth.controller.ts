@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import { prisma } from "../databases/db";
 import { generateAccessToken } from "../utils/token";
 import { AuthRequest } from "../middleware/auth.middleware";
+import { json, string } from "zod";
+import { updateSchema } from "../validators/auth.validator";
 
 const setAuthCookies = async (res: Response, userId: bigint) => {
   const accessToken = generateAccessToken(userId);
@@ -93,4 +95,52 @@ export const me = async (req: AuthRequest, res: Response) => {
       email: user.email,
     },
   });
+};
+
+export const update = async (req: AuthRequest, res: Response) => {
+  try {
+    const { name, email, password, currentPassword } = req.body;
+
+    const userId = req.userId
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) return res.status(404).json({ message: 'User tidak ditemukan' })
+
+    if (password) {
+      if (!currentPassword) {
+        return res.status(422).json({ message: 'Current password wajib diisi' })
+      }
+      const valid = await bcrypt.compare(currentPassword, user.password)
+      if (!valid) return res.status(401).json({ message: 'Password lama salah' })
+    }
+
+    const data: { name?: string; email?: string; password?: string } = {}
+    if (name !== undefined) data.name = name
+    if (email !== undefined) data.email = email
+    if (password !== undefined) data.password = await bcrypt.hash(password, 10)
+
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({ message: 'Tidak ada data yang diupdate' })
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data
+    })
+
+    res.status(200).json({
+      user: { id: updated.id.toString(), name: updated.name, email: updated.email }
+    })
+
+  } catch (error: any) {
+    if (error?.code === "P2002") {
+      return res.status(409).json({ message: "Email sudah digunakan" });
+    }
+
+    console.error("[update profile]", error);
+    res.status(500).json({ message: "Gagal update data user" });
+  }
 };
