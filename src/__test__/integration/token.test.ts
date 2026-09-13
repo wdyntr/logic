@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { generateAccessToken, generateRefreshToken, hashToken } from "../token";
+import { generateAccessToken, generateRefreshToken, hashToken } from "../../utils/token";
 
 // Perlu set env variable untuk test
 beforeAll(() => {

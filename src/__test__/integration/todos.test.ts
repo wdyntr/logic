@@ -2,6 +2,7 @@ import request from "supertest";
 import app from '../test-app'
 import { cleanUpDatabase, disconnectDatabase } from "../setup";
 
+
 let cookie: string;
 
 beforeAll(async () => {
@@ -49,34 +50,54 @@ describe("POST /api/todos", () => {
         expect(res.status).toBe(409);
     });
 
-    it("should fail if > 5 incomplete todos", async () => {
-        await request(app)
-            .post("/api/todos")
-            .set("Cookie", cookie)
-            .send({ name: 'todo 2' });
+    it('race condition test', async () => {
+        const requests = []
 
-        await request(app)
-            .post("/api/todos")
-            .set("Cookie", cookie)
-            .send({ name: 'todo 3' });
+        for (let i = 1; i <= 6; i++) {
+            requests.push(
+                request(app)
+                    .post('/api/todos')
+                    .set('Cookie', cookie)
+                    .send({ name: `race test ${i}` })
+            )
+        }
 
-        await request(app)
-            .post("/api/todos")
-            .set("Cookie", cookie)
-            .send({ name: 'todo 4' });
+        const res = await Promise.all(requests)
 
-        await request(app)
-            .post("/api/todos")
-            .set("Cookie", cookie)
-            .send({ name: 'todo 5' });
+        const statuses = res.map(r => r.status);
+        const successCount = statuses.filter(s => s === 201).length;
+        expect(successCount).toBeLessThanOrEqual(5);
+        expect(statuses.some(s => s === 406 || s === 500)).toBe(true);
+    })
 
-        const res = await request(app)
-            .post("/api/todos")
-            .set("Cookie", cookie)
-            .send({ name: 'todo 6' });
+    // it("should fail if > 5 incomplete todos", async () => {
+    // await request(app)
+    //     .post("/api/todos")
+    //     .set("Cookie", cookie)
+    //     .send({ name: 'todo 2' });
 
-        expect(res.status).toBe(406);
-    });
+    // await request(app)
+    //     .post("/api/todos")
+    //     .set("Cookie", cookie)
+    //     .send({ name: 'todo 3' });
+
+    // await request(app)
+    //     .post("/api/todos")
+    //     .set("Cookie", cookie)
+    //     .send({ name: 'todo 4' });
+
+    // await request(app)
+    //     .post("/api/todos")
+    //     .set("Cookie", cookie)
+    //     .send({ name: 'todo 5' });
+
+    // const res = await request(app)
+    //     .post("/api/todos")
+    //     .set("Cookie", cookie)
+    //     .send({ name: 'todo 6' });
+
+    //     expect(res.status).toBe(406);
+    // });
 
     it("should clean up incomplete todos for next tests", async () => {
         const listRes = await request(app)

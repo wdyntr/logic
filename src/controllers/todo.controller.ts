@@ -34,30 +34,33 @@ export const store = async (req: AuthRequest, res: Response) => {
     const { name } = req.body;
     const userId = req.userId!;
 
-    const exist = await prisma.todo.findFirst({
-      where: { name, userId },
-    });
+    const cek = await prisma.$transaction(async (tx) => {
+      const exist = await tx.todo.findFirst({
+        where: { name, userId },
+      });
 
-    if (exist) {
-      return res.status(409).json({ message: "Nama todo sudah tersedia" });
-    }
+      if (exist) {
+        return 409
+      }
 
-    const incompleteCount = await prisma.todo.count({
-      where: { userId, status: false },
-    });
+      const incompleteCount = await tx.todo.count({
+        where: { userId, status: false },
+      });
 
-    if (incompleteCount >= 5) {
-      return res.status(406).json({ message: "Todo list mencapai limit" });
-    }
+      if (incompleteCount >= 5) {
+        return 406
+      }
 
-    const hasil = await prisma.todo.create({
-      data: { userId, name, status: false },
-    });
+      return await tx.todo.create({
+        data: { userId, name, status: false },
+      });
+    }, { isolationLevel: 'Serializable' })
 
-    if (!hasil)
-      return res.status(409).json({ message: "Gagal menyimpan todo" });
+    if (cek === 409) return res.status(409).json({ message: "Nama todo sudah tersedia" });
 
-    res.status(201).json({ message: "Berhasil menyimpan data Todo", data: serializeTodo(hasil) });
+    if (cek === 406) return res.status(406).json({ message: "Todo list mencapai limit" });
+
+    res.status(201).json({ message: "Berhasil menyimpan data Todo", data: serializeTodo(cek) });
   } catch (error) {
     return res.status(500).json({ message: `Gagal menyimpan todo ${error}` });
   }

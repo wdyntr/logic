@@ -1,5 +1,5 @@
 // auth.validator.test.ts
-import { registerSchema, loginSchema } from "../auth.validator";
+import { registerSchema, loginSchema } from "../../validators/auth.validator";
 
 describe("registerSchema", () => {
   it("should pass with valid data", () => {

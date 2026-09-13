@@ -1,4 +1,4 @@
-import { serializeTodo, serializeTodos } from "../serializer";
+import { serializeTodo, serializeTodos } from "../../utils/serializer";
 
 describe("serializeTodo", () => {
   it("should convert BigInt id to string", () => {

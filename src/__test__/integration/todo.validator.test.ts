@@ -1,6 +1,6 @@
 import {
     createTodoSchema, updateTodoSchema, todoIdParamSchema
-} from "../todo.validator";
+} from "../../validators/todo.validator";
 
 describe('createTodoSchema', () => {
     it('should pass with valid name', () => {
