@@ -7,12 +7,13 @@ datasource db {
 }
 
 model User {
-  id              BigInt    @id @default(autoincrement())
-  name            String    @db.VarChar(255)
-  email           String    @unique(map: "users_email_unique") @db.VarChar(255)
-  password        String    @db.VarChar(255)
-  todo            Todo[]
+  id           BigInt         @id @default(autoincrement())
+  name         String         @db.VarChar(255)
+  email        String         @unique(map: "users_email_unique") @db.VarChar(255)
+  password     String         @db.VarChar(255)
+  todo         Todo[]
   refreshToken RefreshToken[]
+
   @@map("users")
 }
 
@@ -21,29 +22,34 @@ model Todo {
   userId    BigInt    @map("user_id")
   name      String    @db.VarChar(255)
   createdAt DateTime? @map("created_at") @db.Timestamp(0)
-  updatedAt  DateTime? @map("updated_at") @db.Timestamp(0)
+  updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
   status    Boolean   @default(false) @map("status")
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map ("todos")
+  @@index([userId])
+  @@index([userId, status])
+  @@map("todos")
 }
 
 model IdempotencyKey {
-  key         String   @id @db.VarChar(255)
-  response    Json
-  statusCode  Int
-  createdAt   DateTime @default(now())
+  key        String   @id @db.VarChar(255)
+  response   Json
+  statusCode Int
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt]) // For cleanup
   @@map("idempotency_keys")
-  @@index([createdAt])  // For cleanup
 }
 
 model RefreshToken {
   id        BigInt   @id @default(autoincrement())
-  token     String   @unique @db.VarChar(255)  // hash, bukan plain text
+  token     String   @unique @db.VarChar(255) // hash, bukan plain text
   userId    BigInt   @map("user_id")
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([expiresAt])
   @@map("refresh_tokens")
 }

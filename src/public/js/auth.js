@@ -1,4 +1,6 @@
 let csrfToken = null;
+let loginKey = null;
+let registerKey = null;
 
 window.addEventListener("DOMContentLoaded", async () => {
   await checkMe();
@@ -64,16 +66,19 @@ async function callApi(path, method, body, options = {}) {
 }
 
 async function register() {
+  const btn = document.getElementById("register-btn");
+  btn.disabled = true;  // disable
+
   const body = {
     name: document.getElementById("reg_name").value,
     email: document.getElementById("reg_email").value,
     password: document.getElementById("reg_password").value,
   };
 
-  const key = crypto.randomUUID()
+  registerKey = crypto.randomUUID()
 
   const res = await callApi("/api/auth/register", "POST", body, {
-    headers: { 'Idempotency-key': key }
+    headers: { 'Idempotency-key': registerKey }
   });
   if (res && res.status === 201) {
     document.getElementById("active-user").textContent =
@@ -81,18 +86,22 @@ async function register() {
   } else {
     document.getElementById("active-user").textContent = "Belum Login";
   }
+  registerKey = null
+  btn.disabled = false;
 }
 
 async function login() {
+  const btn = document.getElementById("login-btn");
+  btn.disabled = true;  // disable
   const body = {
     email: document.getElementById("login_email").value,
     password: document.getElementById("login_password").value,
   };
 
-  const key = crypto.randomUUID()
+  loginKey = crypto.randomUUID()
 
   const res = await callApi("/api/auth/login", "POST", body, {
-    headers: { 'Idempotency-key': key }
+    headers: { 'Idempotency-key': loginKey }
   });
 
   if (res && res.status === 200) {
@@ -101,6 +110,8 @@ async function login() {
   } else {
     document.getElementById("active-user").textContent = "Belum Login";
   }
+  loginKey = null
+  btn.disabled = false
 }
 
 async function checkMe() {
@@ -120,7 +131,7 @@ async function checkMe() {
 function toggleEditProfile() {
   const form = document.getElementById("edit-profile-form");
   const link = document.querySelector(".toggle-edit");
-  
+
   if (form.style.display === "none") {
     form.style.display = "block";
     link.textContent = "Edit Profile <";

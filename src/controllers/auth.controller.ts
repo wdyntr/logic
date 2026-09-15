@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import { prisma } from "../databases/db";
 import { generateAccessToken, generateRefreshToken, hashToken, REFRESH_TOKEN_EXPIRY_DAYS } from "../utils/token";
 import { AuthRequest } from "../middleware/auth.middleware";
+import { AppError } from "../utils/app-error";
+
 
 const setAuthCookies = async (res: Response, userId: bigint) => {
   const accessToken = generateAccessToken(userId);
@@ -33,7 +35,7 @@ const setAuthCookies = async (res: Response, userId: bigint) => {
   })
 
   // mobile respon do body, biar bisa dsimpan manual ke keychain/keystore
-  
+
   return { accessToken, refreshToken };
 };
 
@@ -44,7 +46,8 @@ export const register = async (req: Request, res: Response) => {
     const existing = await prisma.user.findUnique({ where: { email } });
 
     if (existing)
-      return res.status(400).json({ message: "Email sudah digunakan" });
+      throw new AppError('Email sudah digunakan', 409)
+
 
     const hashed = await bcrypt.hash(password, 10);
 
@@ -59,11 +62,12 @@ export const register = async (req: Request, res: Response) => {
       ...tokens,
     });
   } catch (error: any) {
-    if (error?.code === "P2002") {
-      return res.status(409).json({ message: "Email sudah terdaftar" });
+    if (error instanceof AppError) {
+      throw error
     }
+
     console.error("[register]", error);
-    res.status(500).json({ message: "Gagal mendaftarkan user" });
+    throw new AppError('Gagal mendaftarkan user', 500)
   }
 };
 
@@ -76,7 +80,8 @@ export const login = async (req: Request, res: Response) => {
     });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ message: "Kredensial salah" });
+
+      throw new AppError('Kredensial salah', 401)
     }
 
     const tokens = await setAuthCookies(res, user.id);
@@ -86,8 +91,12 @@ export const login = async (req: Request, res: Response) => {
       ...tokens,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
     console.error("[login]", error);
-    res.status(500).json({ message: "Gagal melakukan login" });
+    throw new AppError('Gagal melakukan login', 500)
+
   }
 };
 
@@ -101,44 +110,57 @@ export const logout = async (req: Request, res: Response) => {
 
   res.clearCookie("access_token");
   res.clearCookie('refresh_token', { path: '/' })
-  
+
   res.json({ message: "Logout berhasil" });
 };
 
 export const me = async (req: AuthRequest, res: Response) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.userId },
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+    });
 
-  if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
+    if (!user) throw new AppError('User tidak ditemukan', 404)
 
-  res.json({
-    user: {
-      id: user.id.toString(),
-      name: user.name,
-      email: user.email,
-    },
-  });
+    res.json({
+      user: {
+        id: user.id.toString(),
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    if (error instanceof AppError)
+      throw error
+
+
+    console.error("[me]", error);
+
+    throw new AppError('Gagal memuat user', 500)
+  }
 };
 
 export const update = async (req: AuthRequest, res: Response) => {
   try {
     const { name, email, password, currentPassword } = req.body;
 
-    const userId = req.userId
+    const userId = req.userId!
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
 
-    if (!user) return res.status(404).json({ message: 'User tidak ditemukan' })
+    if (!user)
+      throw new AppError('User tidak ditemukan', 404)
 
     if (password) {
       if (!currentPassword) {
-        return res.status(422).json({ message: 'Current password wajib diisi' })
+        throw new AppError('Current password wajib diisi', 422)
+
       }
       const valid = await bcrypt.compare(currentPassword, user.password)
-      if (!valid) return res.status(401).json({ message: 'Password lama salah' })
+      if (!valid)
+        throw new AppError('password lama salah', 401)
     }
 
     const data: { name?: string; email?: string; password?: string } = {}
@@ -147,7 +169,8 @@ export const update = async (req: AuthRequest, res: Response) => {
     if (password !== undefined) data.password = await bcrypt.hash(password, 10)
 
     if (Object.keys(data).length === 0) {
-      return res.status(400).json({ message: 'Tidak ada data yang diupdate' })
+      throw new AppError('Tidak ada data yang diupdate', 400)
+
     }
 
     const updated = await prisma.user.update({
@@ -160,27 +183,29 @@ export const update = async (req: AuthRequest, res: Response) => {
     })
 
   } catch (error: any) {
-    if (error?.code === "P2002") {
-      return res.status(409).json({ message: "Email sudah digunakan" });
+    if (error?.code === 'P2002') throw new AppError('Email sudah digunakan', 409)
+
+    if (error instanceof AppError) {
+      throw error
     }
 
     console.error("[update profile]", error);
-    res.status(500).json({ message: "Gagal update data user" });
+    throw new AppError('Gagal update data user', 500)
+
   }
 };
 
 export const refresh = async (req: AuthRequest, res: Response) => {
   const token = req.cookies?.refresh_token;
   if (!token)
-    return res.status(401).json({ message: "Refresh Token tidak ada" });
+    throw new AppError('Refresh token tidak ada', 401)
 
   const tokenHash = hashToken(token);
   const stored = await prisma.refreshToken.findUnique({ where: { token: tokenHash } });
 
   if (!stored || stored.expiresAt < new Date()) {
-    return res
-      .status(401)
-      .json({ message: 'Refresh token tidak valid atau kadaluarsa' })
+    throw new AppError('Refresh token tidak valid atau kadaluarsa', 401)
+
   }
 
   await prisma.refreshToken.delete({ where: { id: stored.id } })

@@ -5,13 +5,14 @@ import { validate } from "../middleware/validate.middleware";
 import { authenticate } from "../middleware/auth.middleware";
 import { idempotency } from "../middleware/idempotency.middleware";
 import { authLimiter } from "../middleware/rateLimit.middleware";
+import { asyncHandler } from "../utils/async-handler";
 
 const router = Router();
-router.post("/register", authLimiter, validate(registerSchema), idempotency, register);
-router.post("/login", authLimiter, validate(loginSchema), idempotency, login);
-router.get("/me", authenticate, me);
-router.patch("/me", authenticate, validate(updateSchema), update);
-router.post('/refresh', authLimiter, refresh)
-router.post('/logout', authenticate, logout)
+router.post("/register", authLimiter, validate(registerSchema), idempotency, asyncHandler(register));
+router.post("/login", authLimiter, validate(loginSchema), idempotency, asyncHandler(login));
+router.get("/me", authenticate, asyncHandler(me));
+router.patch("/me", authenticate, validate(updateSchema), asyncHandler(update));
+router.post('/refresh', authLimiter, asyncHandler(refresh))
+router.post('/logout', authenticate, asyncHandler(logout))
 
 export default router;

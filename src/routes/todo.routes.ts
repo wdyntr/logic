@@ -5,15 +5,16 @@ import { destroy, index, store, toggle, update } from "../controllers/todo.contr
 import { validate, validateParams } from "../middleware/validate.middleware";
 import { createTodoSchema, updateTodoSchema, todoIdParamSchema } from "../validators/todo.validator";
 import { apiLimiter } from "../middleware/rateLimit.middleware";
+import { asyncHandler } from "../utils/async-handler";
 
 const router = Router();
 
 router.use(authenticate, apiLimiter);
 
-router.get("/", index);
-router.post("/", validate(createTodoSchema), idempotency, store);
-router.patch("/:id", validate(updateTodoSchema), idempotency, update);
-router.patch("/:id/toggle", validateParams(todoIdParamSchema), idempotency, toggle);
-router.delete("/:id", validateParams(todoIdParamSchema), destroy);
+router.get("/", asyncHandler(index));
+router.post("/", validate(createTodoSchema), idempotency, asyncHandler(store));
+router.patch("/:id", validate(updateTodoSchema), idempotency, asyncHandler(update));
+router.patch("/:id/toggle", validateParams(todoIdParamSchema), idempotency, asyncHandler(toggle));
+router.delete("/:id", validateParams(todoIdParamSchema), asyncHandler(destroy));
 
 export default router;

@@ -6,6 +6,8 @@ import authRoutes from './routes/auth.routes'
 import todoRoutes from './routes/todo.routes'
 import { Request, Response, NextFunction } from "express";
 import { authPage, homepage, todoPage } from './controllers/public.controller'
+import { AppError } from './utils/app-error'
+
 
 const app = express()
 
@@ -41,18 +43,22 @@ app.set('views', path.join(__dirname, 'views'))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/todos', todoRoutes)
+app.use('/api', (req, res) => {
+  res.status(404).json({ message: 'Route tidak ditemukan' });
+});
 
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  if (process.env.NODE_ENV === "local") {
-    res.status(500).json({
-      message: "Terjadi kesalahan pada server",
-      stack: err.stack,
-      errMessage: err.message,
-    });
-  } else {
-    res.status(500).json({ message: "Terjadi kesalahan pada server" });
+  const statusCode = err instanceof AppError ? err.statusCode : 500
+  const message = err instanceof AppError ? err.message : 'Terjadi kesalahan pada server'
+
+  const response: any = { message }
+
+  if (process.env.NODE_ENV === 'local') {
+    response.stack = err.stack
   }
+
+  res.status(statusCode).json(response)
 });
 
 export default app
