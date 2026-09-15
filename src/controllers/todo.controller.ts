@@ -55,8 +55,8 @@ export const store = async (req: AuthRequest, res: Response) => {
 
     res.status(201).json({ message: "Berhasil menyimpan data Todo", data: serializeTodo(cek) });
   } catch (error: any) {
-    if (error?.code === "2034")
-      throw new AppError('Gagal menyimpan data, silahkan coba lagi', 409)
+    if (error?.code === "P2034")
+      throw new AppError('Gagal menyimpan data, todo mencapai limit', 406)
 
 
     if (error instanceof AppError) throw error

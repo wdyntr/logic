@@ -4,8 +4,9 @@ import cookieParser from 'cookie-parser'
 import path from 'path'
 import authRoutes from './routes/auth.routes'
 import todoRoutes from './routes/todo.routes'
+import dsaRoutes from './routes/dsa.routes'
 import { Request, Response, NextFunction } from "express";
-import { authPage, homepage, todoPage } from './controllers/public.controller'
+import { authPage, dsaPAge, homepage, todoPage } from './controllers/public.controller'
 import { AppError } from './utils/app-error'
 
 
@@ -37,12 +38,15 @@ app.use(express.static(path.join(__dirname, './public')))
 app.get('/', homepage)
 app.get('/auth', authPage)
 app.get('/todo', todoPage)
+app.get('/dsa', dsaPAge)
 
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/todos', todoRoutes)
+app.use('/api/dsa', dsaRoutes)
+
 app.use('/api', (req, res) => {
   res.status(404).json({ message: 'Route tidak ditemukan' });
 });

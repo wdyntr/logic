@@ -12,3 +12,7 @@ export const todoPage = async (req: Request, res: Response) => {
   res.render("todo", { data: [] });
 };
 
+export const dsaPAge = async (req: Request, res: Response) => {
+  res.render("dsa", { data: [] });
+};
+

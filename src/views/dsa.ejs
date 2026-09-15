@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Todo List - SaaS API</title>
+  <title>DSA - SaaS API</title>
   <link href="/css/base.css" rel="stylesheet" />
   <style>
     nav {
@@ -35,11 +35,11 @@
   <nav>
     <a href="/">Home</a>
     <a href="/auth">Auth</a>
-    <a href="/todo" class="active">Todo List</a>
-    <a href="/dsa">DSA</a>
+    <a href="/todo" class="">Todo List</a>
+    <a href="/dsa"  class="active">DSA</a>
   </nav>
 
-  <h2>Manajemen Todo</h2>
+  <h2>Autentikasi</h2>
 
   <div class="container">
     <div class="left-panel">
@@ -48,24 +48,15 @@
           <label>Base URL API</label>
           <input id="baseUrl" />
         </div>
-        <fieldset>
-          <legend>Daftar Todo</legend>
-          <div id="todo-list">
-            
-          </div>
-          <div style="display: flex; gap: 8px; align-items: center">
-            <button onclick="loadTodo(currentPage - 1)" id="prev-btn" disabled>Prev</button>
-            <span id="page-info" style="font-size: 13px">1 / 1</span>
-            <button onclick="loadTodo(currentPage + 1)" id="next-btn" disabled>Next</button>
-          </div>
-        </fieldset>
 
         <fieldset>
-          <legend>Buat Todo</legend>
-          <label>Nama Todo</label>
-          <input id="name" />
-          <button onclick="createTodo()">Buat Todo</button>
+          <legend>Input DSA (tanpa database)</legend>
+          <label>Nama</label>
+          <input id="dsa_name" />
+          
+          <button onclick="storeDsa()">Register</button>
         </fieldset>
+
       </div>
     </div>
 
@@ -82,11 +73,10 @@
     </div>
   </div>
 
-  <script>window.API_BASE_URL = window.location.origin;</script>
-
-  <div id="toast-container"></div>
-
-  <script src="/js/todo.js"></script>
+  <script>
+    window.API_BASE_URL = window.location.origin;
+  </script>
+  <script src="/js/dsa.js"></script>
 </body>
 
 </html>

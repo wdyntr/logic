@@ -160,7 +160,7 @@ export const update = async (req: AuthRequest, res: Response) => {
       }
       const valid = await bcrypt.compare(currentPassword, user.password)
       if (!valid)
-        throw new AppError('password lama salah', 401)
+        throw new AppError('Password lama salah', 401)
     }
 
     const data: { name?: string; email?: string; password?: string } = {}
