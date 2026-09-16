@@ -36,10 +36,10 @@
     <a href="/">Home</a>
     <a href="/auth">Auth</a>
     <a href="/todo" class="">Todo List</a>
-    <a href="/dsa"  class="active">DSA</a>
+    <a href="/dsa" class="active">DSA</a>
   </nav>
 
-  <h2>Autentikasi</h2>
+  <h2>Data Structure Algorithm</h2>
 
   <div class="container">
     <div class="left-panel">
@@ -51,11 +51,12 @@
 
         <fieldset>
           <legend>Input DSA (tanpa database)</legend>
-          <label>Nama</label>
+          <label>List DSA</label>
           <input id="dsa_name" />
-          
-          <button onclick="storeDsa()">Register</button>
+
+          <button class="dsaButton" onclick="countDuplikat()">Submit</button>
         </fieldset>
+
 
       </div>
     </div>
@@ -71,11 +72,15 @@
         </div>
       </div>
     </div>
+
+
   </div>
 
   <script>
     window.API_BASE_URL = window.location.origin;
   </script>
+  <div id="toast-container"></div>
+
   <script src="/js/dsa.js"></script>
 </body>
 
