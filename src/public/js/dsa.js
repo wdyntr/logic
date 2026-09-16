@@ -1,4 +1,3 @@
-let csrfToken = null;
 let key = null;
 
 document.getElementById("baseUrl").value =
@@ -26,10 +25,6 @@ function showResult(status, data) {
 async function callApi(path, method, body, options = {}) {
     const { retry = true, headers = {} } = options
     const requestHeaders = { "Content-Type": "application/json", ...headers };
-
-    if (["POST", "PUT", "DELETE", "PATCH"].includes(method) && csrfToken) {
-        requestHeaders["x-csrf-token"] = csrfToken;
-    }
 
     try {
         const res = await fetch(baseUrl() + path, {
@@ -66,7 +61,7 @@ async function countDuplikat() {
     key = crypto.randomUUID();
 
     const dsa = document.getElementById("dsa_name");
-    const listDsa = dsa.value.split(",").map(s => s.trim()) 
+    const listDsa = dsa.value.split(",").map(s => s.trim())
 
     const res = await callApi(
         "/api/dsa",
