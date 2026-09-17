@@ -78,6 +78,26 @@ async function countDuplikat() {
     btn.disabled = false;
 }
 
+async function countStatus() {
+    const btn = document.querySelector(".dbDsaButton");
+    btn.disabled = true;  // disable
+    key = crypto.randomUUID();
+
+    const res = await callApi(
+        "/api/dsa",
+        "GET",
+        null,
+        { headers: { "Idempotency-key": key }, },
+    );
+
+    if (res && res.status === 200) {
+        showToast("success", "Count status berhasil");
+    }
+
+    btn.disabled = false;
+}
+
+
 function showToast(type, message) {
     const container = document.getElementById("toast-container");
     const toast = document.createElement("div");

@@ -12,3 +12,17 @@ export const hitungFrekuensi = (arr: string[]): Record<string, number> => {
 
     return obj
 }
+
+export const hitungStatus = (arr: boolean[]): Record<string, number> => {
+    const obj: { [key: string]: number } = {}
+
+    for (const status of arr) {
+        if (!(String(status) in obj)) {
+            obj[String(status)] = 1
+        } else {
+            obj[String(status)] += 1
+        }
+    }
+
+    return obj
+}
