@@ -67,7 +67,7 @@ async function countDuplikat() {
         "/api/dsa",
         "POST",
         { data: listDsa },
-        { headers: { "Idempotency-key": key }, },
+        // { headers: { "Idempotency-key": key }, }, gak pake karena cuma get
     );
 
     if (res && res.status === 200) {
@@ -87,7 +87,7 @@ async function countStatus() {
         "/api/dsa",
         "GET",
         null,
-        { headers: { "Idempotency-key": key }, },
+        // { headers: { "Idempotency-key": key }, }, gak pake karena cuma get
     );
 
     if (res && res.status === 200) {

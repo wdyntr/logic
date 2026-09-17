@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AppError } from "../utils/app-error";
-import { hitungFrekuensi, hitungStatus } from "../utils/hitungFrekuensi";
+import { hitungFrekuensi } from "../utils/hitungFrekuensi";
 import { AuthRequest } from "../middleware/auth.middleware";
 import { prisma } from "../databases/db";
 
@@ -28,7 +28,7 @@ export const displayDB = async (req: AuthRequest, res: Response) => {
         })
         const status = data.map(t => t.status)
 
-        const hasil = hitungStatus(status)
+        const hasil = hitungFrekuensi(status)
 
         return res.json({ Output: hasil })
     } catch (error) {
