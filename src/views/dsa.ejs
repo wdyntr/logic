@@ -49,8 +49,12 @@
           <input id="baseUrl" />
         </div>
 
+        <div class="base-url">
+          <label>Hash map</label>
+        </div>
+
         <fieldset>
-          <legend>Input DSA (tanpa database)</legend>
+          <legend>Input Hash map(tanpa database)</legend>
           <label>List DSA</label>
           <input id="dsa_name" />
 
@@ -58,12 +62,35 @@
         </fieldset>
 
         <fieldset>
-          <legend>Count status with DB</legend>
-        
+          <legend>Count status with DB - Hash map</legend>
           <button class="dbDsaButton" onclick="countStatus()">Check</button>
         </fieldset>
 
+        <div class="base-url">
+          <label>Queue</label>
+        </div>
 
+        <fieldset>
+          <legend>Add Queue(tanpa database)</legend>
+          <label>Tambah Antrian</label>
+          <input id="queue_name" />
+
+          <button class="queueButton" onclick="queue()">Submit</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>Next Queue(tanpa database)</legend>
+          <label>Next Antrian</label>
+
+          <button class="processButton" onclick="queueNext()">Next Process</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>Check Queue(tanpa database)</legend>
+          <label>Antrian Sekarang</label>
+
+          <button class="checkButton" onclick="queueCheck()">Check</button>
+        </fieldset>
       </div>
     </div>
 

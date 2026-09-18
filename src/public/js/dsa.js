@@ -110,3 +110,60 @@ function showToast(type, message) {
         toast.addEventListener("animationend", () => toast.remove());
     }, 3000);
 }
+
+async function queue() {
+    const btn = document.querySelector(".queueButton");
+    btn.disabled = true;  // disable
+
+    const message = document.getElementById("queue_name");
+
+    const res = await callApi(
+        "/api/dsa/queue",
+        "POST",
+        { message: message.value },
+        // { headers: { "Idempotency-key": key }, }, gak pake karena cuma get
+    );
+
+    if (res && res.status === 201) {
+        message.value = "";
+        showToast("success", "Antrian berhasil ditambahkan");
+    }
+
+    btn.disabled = false;
+}
+
+async function queueNext() {
+    const btn = document.querySelector(".processButton");
+    btn.disabled = true;  // disable
+
+    const res = await callApi(
+        "/api/dsa/dequeue",
+        "POST",
+        null,
+        // { headers: { "Idempotency-key": key }, }, gak pake karena cuma get
+    );
+
+    if (res && res.status === 201) {
+        showToast("success", "Status antrian berhasil dicek");
+    }
+
+    btn.disabled = false;
+}
+
+async function queueCheck() {
+    const btn = document.querySelector(".checkButton");
+    btn.disabled = true;  // disable
+
+    const res = await callApi(
+        "/api/dsa/peek",
+        "GET",
+        null,
+        // { headers: { "Idempotency-key": key }, }, gak pake karena cuma get
+    );
+
+    if (res && res.status === 200) {
+        showToast("success", "Berhasil menampilkan first queue");
+    }
+
+    btn.disabled = false;
+}
