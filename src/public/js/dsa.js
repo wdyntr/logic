@@ -98,6 +98,13 @@ async function countStatus() {
 }
 
 
+function toggleSection(id) {
+    const el = document.getElementById(id);
+    const icon = el.previousElementSibling.querySelector(".toggle-icon");
+    el.classList.toggle("hidden");
+    icon.classList.toggle("collapsed");
+}
+
 function showToast(type, message) {
     const container = document.getElementById("toast-container");
     const toast = document.createElement("div");
@@ -163,6 +170,192 @@ async function queueCheck() {
 
     if (res && res.status === 200) {
         showToast("success", "Berhasil menampilkan first queue");
+    }
+
+    btn.disabled = false;
+}
+
+// ===================== Queue
+async function pushStack() {
+    const btn = document.querySelector(".pushButton");
+    btn.disabled = true;  // disable
+
+    const data = document.getElementById("stack_name");
+
+    const res = await callApi(
+        "/api/dsa/push",
+        "POST",
+        { data: data.value },
+        // { headers: { "Idempotency-key": key }, }, gak pake karena cuma get
+    );
+
+    if (res && res.status === 201) {
+        showToast("success", "Berhasil menambahkan Stack");
+    }
+
+    btn.disabled = false;
+}
+
+async function popStack() {
+    const btn = document.querySelector(".popButton");
+    btn.disabled = true;  // disable
+
+    const res = await callApi(
+        "/api/dsa/pop",
+        "POST",
+        null,
+        // { headers: { "Idempotency-key": key }, }, gak pake karena cuma get
+    );
+
+    if (res && res.status === 201) {
+        showToast("success", "Berhasil menghapus last Stack");
+    }
+
+    btn.disabled = false;
+}
+
+async function topStack() {
+    const btn = document.querySelector(".topButton");
+    btn.disabled = true;  // disable
+
+    const res = await callApi(
+        "/api/dsa/top",
+        "GET",
+        null,
+        // { headers: { "Idempotency-key": key }, }, gak pake karena cuma get
+    );
+
+    if (res && res.status === 200) {
+        showToast("success", "Berhasil menampilkan last Stack");
+    }
+
+    btn.disabled = false;
+}
+
+async function snapshotStack() {
+    const btn = document.querySelector(".snapshotButton");
+    btn.disabled = true;  // disable
+
+    const res = await callApi(
+        "/api/dsa/snapshot",
+        "GET",
+        null,
+        // { headers: { "Idempotency-key": key }, }, gak pake karena cuma get
+    );
+
+    if (res && res.status === 200) {
+        showToast("success", "Berhasil menampilkan list Stack");
+    }
+
+    btn.disabled = false;
+}
+
+// =================== Linked list
+async function appendList() {
+    const btn = document.querySelector('.appendList')
+    btn.disabled = true
+
+    const data = document.getElementById('append_name')
+
+    const res = await callApi(
+        '/api/dsa/append',
+        'POST',
+        { data: data.value }
+    )
+
+    if (res && res.status === 201) {
+        showToast("success", "Berhasil menambahkan node list");
+    }
+
+    btn.disabled = false;
+}
+
+async function prependList() {
+    const btn = document.querySelector('.prependList')
+    btn.disabled = true
+
+    const data = document.getElementById('prepend_name')
+
+    const res = await callApi(
+        '/api/dsa/prepend',
+        'POST',
+        { data: data.value }
+    )
+
+    if (res && res.status === 201) {
+        showToast("success", "Berhasil menambahkan node sebagai first list");
+    }
+
+    btn.disabled = false;
+}
+
+async function deleteList() {
+    const btn = document.querySelector('.deleteList')
+    btn.disabled = true
+
+    const data = document.getElementById('delete_name')
+
+    const res = await callApi(
+        '/api/dsa/drop',
+        'POST',
+        { data: data.value }
+    )
+
+    if (res && res.status === 201) {
+        showToast("success", "Berhasil menghapus node dari list");
+    }
+
+    btn.disabled = false;
+}
+
+async function findList() {
+    const btn = document.querySelector('.findList')
+    btn.disabled = true
+
+    const data = document.getElementById('find_name')
+
+    const res = await callApi(
+        '/api/dsa/find',
+        'POST',
+        { data: data.value }
+    )
+
+    if (res && res.status === 200) {
+        showToast("success", "Node berhasil ditemukan");
+    }
+
+    btn.disabled = false;
+}
+
+async function toArray() {
+    const btn = document.querySelector('.toArray')
+    btn.disabled = true
+
+    const res = await callApi(
+        '/api/dsa/toArray',
+        'GET',
+        null
+    )
+
+    if (res && res.status === 200) {
+        showToast("success", "Node list berhasil ditampilkan");
+    }
+
+    btn.disabled = false;
+}
+
+async function getSize() {
+    const btn = document.querySelector('.getSize')
+    btn.disabled = true
+
+    const res = await callApi(
+        '/api/dsa/size',
+        'GET',
+        null
+    )
+
+    if (res && res.status === 200) {
+        showToast("success", "Count node berhasil");
     }
 
     btn.disabled = false;

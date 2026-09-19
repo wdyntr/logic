@@ -28,6 +28,33 @@
     nav a.active {
       border-bottom: 2px solid #333;
     }
+
+    .section-header {
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-weight: bold;
+      border-bottom: 2px solid #333;
+      margin-bottom: 12px;
+    }
+
+    .section-header label {
+      cursor: pointer;
+    }
+
+    .toggle-icon {
+      transition: transform 0.2s;
+    }
+
+    .toggle-icon.collapsed {
+      transform: rotate(-90deg);
+    }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 
@@ -49,48 +76,115 @@
           <input id="baseUrl" />
         </div>
 
-        <div class="base-url">
+        <div class="section-header" onclick="toggleSection('hashmap-section')">
           <label>Hash map</label>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div id="hashmap-section" class="hidden">
+          <fieldset>
+            <legend>Input Hash map(tanpa database)</legend>
+            <label>List DSA</label>
+            <input id="dsa_name" />
+            <button class="dsaButton" onclick="countDuplikat()">Submit</button>
+          </fieldset>
+
+          <fieldset>
+            <legend>Count status with DB - Hash map</legend>
+            <button class="dbDsaButton" onclick="countStatus()">Check</button>
+          </fieldset>
         </div>
 
-        <fieldset>
-          <legend>Input Hash map(tanpa database)</legend>
-          <label>List DSA</label>
-          <input id="dsa_name" />
-
-          <button class="dsaButton" onclick="countDuplikat()">Submit</button>
-        </fieldset>
-
-        <fieldset>
-          <legend>Count status with DB - Hash map</legend>
-          <button class="dbDsaButton" onclick="countStatus()">Check</button>
-        </fieldset>
-
-        <div class="base-url">
+        <div class="section-header" onclick="toggleSection('queue-section')">
           <label>Queue</label>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div id="queue-section" class="hidden">
+          <fieldset>
+            <legend>Add Queue(tanpa database)</legend>
+            <label>Tambah Antrian</label>
+            <input id="queue_name" />
+            <button class="queueButton" onclick="queue()">Submit</button>
+          </fieldset>
+
+          <fieldset>
+            <legend>Next Queue(tanpa database)</legend>
+            <label>Next Antrian</label>
+            <button class="processButton" onclick="queueNext()">Next Process</button>
+          </fieldset>
+
+          <fieldset>
+            <legend>Check Queue(tanpa database)</legend>
+            <label>Antrian Sekarang</label>
+            <button class="checkButton" onclick="queueCheck()">Check</button>
+          </fieldset>
         </div>
 
-        <fieldset>
-          <legend>Add Queue(tanpa database)</legend>
-          <label>Tambah Antrian</label>
-          <input id="queue_name" />
+        <div class="section-header" onclick="toggleSection('stack-section')">
+          <label>Stack</label>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div id="stack-section" class="hidden">
+          <fieldset>
+            <legend>Input Stack</legend>
+            <input id="stack_name" />
+            <button class="pushButton" onclick="pushStack()">Submit</button>
+          </fieldset>
 
-          <button class="queueButton" onclick="queue()">Submit</button>
-        </fieldset>
+          <fieldset>
+            <legend>Pop Stack</legend>
+            <button class="popButton" onclick="popStack()">Pop</button>
+          </fieldset>
 
-        <fieldset>
-          <legend>Next Queue(tanpa database)</legend>
-          <label>Next Antrian</label>
+          <fieldset>
+            <legend>Status Stack</legend>
+            <button class="topButton" onclick="topStack()">Status</button>
+          </fieldset>
 
-          <button class="processButton" onclick="queueNext()">Next Process</button>
-        </fieldset>
+          <fieldset>
+            <legend>Snapshot Stack</legend>
+            <button class="snapshotButton" onclick="snapshotStack()">Snapshot</button>
+          </fieldset>
+        </div>
 
-        <fieldset>
-          <legend>Check Queue(tanpa database)</legend>
-          <label>Antrian Sekarang</label>
+        <div class="section-header" onclick="toggleSection('list-section')">
+          <label>Linked List</label>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div id="list-section" class="hidden">
+          <fieldset>
+            <legend>Append List</legend>
+            <input id="append_name" />
+            <button class="appendList" onclick="appendList()">Submit</button>
+          </fieldset>
 
-          <button class="checkButton" onclick="queueCheck()">Check</button>
-        </fieldset>
+          <fieldset>
+            <legend>Prepend list</legend>
+            <input id="prepend_name" />
+            <button class="prependList" onclick="prependList()">Submit</button>
+          </fieldset>
+
+          <fieldset>
+            <legend>Delete list</legend>
+            <input id="delete_name" />
+            <button class="deleteList" onclick="deleteList()">Submit</button>
+          </fieldset>
+
+          <fieldset>
+            <legend>Find list</legend>
+            <input id="find_name" />
+            <button class="findList" onclick="findList()">Submit</button>
+          </fieldset>
+
+          <fieldset>
+            <legend>Get Array</legend>
+            <button class="toArray" onclick="toArray()">Submit</button>
+          </fieldset>
+
+          <fieldset>
+            <legend>Get size</legend>
+            <button class="getSize" onclick="getSize()">Submit</button>
+          </fieldset>
+        </div>
       </div>
     </div>
 
