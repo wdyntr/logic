@@ -360,3 +360,24 @@ async function getSize() {
 
     btn.disabled = false;
 }
+
+// bubbble sort
+async function bubbleSort() {
+    const btn = document.querySelector('.bubbleSort')
+    btn.disabled = true
+
+    const data = document.getElementById('bubble_name')
+    const listSort = data.value.split(",").map(s => Number(s.trim()))
+    console.log(listSort)
+    const res = await callApi(
+        '/api/dsa/sort/bubble',
+        'POST',
+        { data: listSort }
+    )
+
+    if (res && res.status === 200) {
+        showToast("success", "Bubble sort berhasil");
+    }
+
+    btn.disabled = false;
+}

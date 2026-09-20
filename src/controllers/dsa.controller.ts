@@ -3,9 +3,11 @@ import { AppError } from "../utils/app-error";
 import { hitungFrekuensi } from "../utils/hitungFrekuensi";
 import { AuthRequest } from "../middleware/auth.middleware";
 import { prisma } from "../databases/db";
-import { notificationQueue } from "../utils/notification-queue";
-import { historyStack } from "../utils/stack-instance";
-import { linkedList } from "../utils/linked-list-instance";
+import { notificationQueue } from "../utils/queue/notification-queue";
+import { historyStack } from "../utils/stack/stack-instance";
+import { linkedList } from "../utils/list/linked-list-instance";
+import { sorted } from "../utils/sort/sort.instance";
+import { Result } from "pg";
 
 export const display = async (req: Request, res: Response) => {
     try {
@@ -298,5 +300,33 @@ export const sizeList = async (req: Request, res: Response) => {
         if (error instanceof AppError) throw error
 
         throw new AppError('Gagal linked list data', 500)
+    }
+}
+
+// bubble sort
+export const bubbleSort = async (req: Request, res: Response) => {
+    try {
+        const { data } = req.body
+
+        if (!data) throw new AppError("Data tidak boleh kosong", 400)
+
+        const isArray = Array.isArray(data)
+        if (!isArray) throw new AppError('Data harus berupa array', 400)
+
+        const isAllNumber = data.every(item => typeof item === 'number');
+        if (!isAllNumber) throw new AppError('Array bukan number', 400)
+
+        const result = sorted.bubble(data)
+
+        return res.status(200).json({
+            message: 'Berhasil sorting',
+            original: result.original,
+            sorted: result.sorted,
+        })
+
+    } catch (error) {
+        if (error instanceof AppError) throw error
+
+        throw new AppError('Gagal bubble sort data', 500)
     }
 }
