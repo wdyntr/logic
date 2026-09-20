@@ -1,46 +1,44 @@
 export class Sort<T> {
-    private swap: boolean = false
-
     bubble(item: T[]) {
         const original = [...item]
-        const sort = [...item]
-        const n = sort.length
+        const sorted = [...item]
+        const n = sorted.length
 
         for (let i = 0; i < n - 1; i++) {
-            this.swap = false
+            let swapped = false
             for (let j = 0; j < n - 1 - i; j++) {
-                if (sort[j] > sort[j + 1]) {
-                    let temp = sort[j]
-                    sort[j] = sort[j + 1]
-                    sort[j + 1] = temp
-                    this.swap = true
+                if (sorted[j] > sorted[j + 1]) {
+                    let temp = sorted[j]
+                    sorted[j] = sorted[j + 1]
+                    sorted[j + 1] = temp
+                    swapped = true
                 }
             }
-            if (!this.swap) break
+            if (!swapped) break
         }
 
-        return { original: original, sorted: sort }
+        return { original, sorted }
     }
 
     selection(item: T[]) {
         const original = [...item]
-        const select = [...item]
+        const sorted = [...item]
 
-        for (let i = 0; i < select.length - 1; i++) {
+        for (let i = 0; i < sorted.length - 1; i++) {
             let minIndex = i
-            for (let j = i + 1; j < select.length; j++) {
-                if (select[j] < select[minIndex]) {
+            for (let j = i + 1; j < sorted.length; j++) {
+                if (sorted[j] < sorted[minIndex]) {
                     minIndex = j
                 }
             }
 
             if (minIndex !== i) {
-                let temp = select[i];
-                select[i] = select[minIndex];
-                select[minIndex] = temp;
+                let temp = sorted[i]
+                sorted[i] = sorted[minIndex]
+                sorted[minIndex] = temp
             }
         }
 
-        return { original: original, selected: select }
+        return { original, sorted }
     }
 }

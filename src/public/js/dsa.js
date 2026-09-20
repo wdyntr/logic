@@ -1,5 +1,3 @@
-let key = null;
-
 document.getElementById("baseUrl").value =
     window.API_BASE_URL || window.location.origin;
 
@@ -57,8 +55,7 @@ async function callApi(path, method, body, options = {}) {
 
 async function countDuplikat() {
     const btn = document.querySelector(".dsaButton");
-    btn.disabled = true;  // disable
-    key = crypto.randomUUID();
+    btn.disabled = true;
 
     const dsa = document.getElementById("dsa_name");
     const listDsa = dsa.value.split(",").map(s => s.trim())
@@ -80,8 +77,7 @@ async function countDuplikat() {
 
 async function countStatus() {
     const btn = document.querySelector(".dbDsaButton");
-    btn.disabled = true;  // disable
-    key = crypto.randomUUID();
+    btn.disabled = true;
 
     const res = await callApi(
         "/api/dsa",
@@ -150,7 +146,7 @@ async function queueNext() {
         // { headers: { "Idempotency-key": key }, }, gak pake karena cuma get
     );
 
-    if (res && res.status === 201) {
+    if (res && res.status === 200) {
         showToast("success", "Status antrian berhasil dicek");
     }
 
@@ -175,7 +171,7 @@ async function queueCheck() {
     btn.disabled = false;
 }
 
-// ===================== Queue
+// ===================== Stack
 async function pushStack() {
     const btn = document.querySelector(".pushButton");
     btn.disabled = true;  // disable
@@ -207,7 +203,7 @@ async function popStack() {
         // { headers: { "Idempotency-key": key }, }, gak pake karena cuma get
     );
 
-    if (res && res.status === 201) {
+    if (res && res.status === 200) {
         showToast("success", "Berhasil menghapus last Stack");
     }
 
@@ -301,7 +297,7 @@ async function deleteList() {
         { data: data.value }
     )
 
-    if (res && res.status === 201) {
+    if (res && res.status === 200) {
         showToast("success", "Berhasil menghapus node dari list");
     }
 
@@ -361,14 +357,13 @@ async function getSize() {
     btn.disabled = false;
 }
 
-// bubbble sort
+// bubble sort
 async function bubbleSort() {
     const btn = document.querySelector('.bubbleSort')
     btn.disabled = true
 
     const data = document.getElementById('bubble_name')
     const listSort = data.value.split(",").map(s => Number(s.trim()))
-    console.log(listSort)
     const res = await callApi(
         '/api/dsa/sort/bubble',
         'POST',
@@ -388,7 +383,6 @@ async function selectionSort() {
 
     const data = document.getElementById('selection_name')
     const listSort = data.value.split(",").map(s => Number(s.trim()))
-    console.log(listSort)
     const res = await callApi(
         '/api/dsa/sort/selection',
         'POST',

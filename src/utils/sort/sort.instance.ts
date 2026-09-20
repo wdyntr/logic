@@ -1,3 +1,3 @@
 import { Sort } from "./sort"
 
-export const sorted = new Sort()
+export const sorted = new Sort<number>()

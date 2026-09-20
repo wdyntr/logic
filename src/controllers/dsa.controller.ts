@@ -7,7 +7,6 @@ import { notificationQueue } from "../utils/queue/notification-queue";
 import { historyStack } from "../utils/stack/stack-instance";
 import { linkedList } from "../utils/list/linked-list-instance";
 import { sorted } from "../utils/sort/sort.instance";
-import { Result } from "pg";
 
 export const display = async (req: Request, res: Response) => {
     try {
@@ -71,7 +70,7 @@ export const dequeue = async (req: Request, res: Response) => {
 
         const deq = notificationQueue.dequeue()
 
-        return res.status(201).json({
+        return res.status(200).json({
             message: 'Berhasil Dihapus (digeser)',
             headIndex: {
                 headIndexBefore: headIndex,
@@ -131,7 +130,7 @@ export const popStack = async (req: Request, res: Response) => {
 
         const data = historyStack.pop()
 
-        return res.status(201).json({
+        return res.status(200).json({
             message: 'Berhasil Dihapus',
             deleted: data,
             remaining: historyStack.size
@@ -234,7 +233,7 @@ export const deleteList = async (req: Request, res: Response) => {
 
         if (!result) throw new AppError('Data tidak ditemukan', 404)
 
-        return res.status(201).json({
+        return res.status(200).json({
             message: 'Berhasil dihapus',
             data: data,
             array: linkedList.toArray()
@@ -313,7 +312,7 @@ export const bubbleSort = async (req: Request, res: Response) => {
         const isArray = Array.isArray(data)
         if (!isArray) throw new AppError('Data harus berupa array', 400)
 
-        const isAllNumber = data.every(item => typeof item === 'number');
+        const isAllNumber = data.every(item => typeof item === 'number' && !isNaN(item));
         if (!isAllNumber) throw new AppError('Array bukan number', 400)
 
         const result = sorted.bubble(data)
@@ -340,7 +339,7 @@ export const selectionSort = async (req: Request, res: Response) => {
         const isArray = Array.isArray(data)
         if (!isArray) throw new AppError('Data harus berupa array', 400)
 
-        const isAllNumber = data.every(item => typeof item === 'number');
+        const isAllNumber = data.every(item => typeof item === 'number' && !isNaN(item));
         if (!isAllNumber) throw new AppError('Array bukan number', 400)
 
         const result = sorted.selection(data)
@@ -348,12 +347,12 @@ export const selectionSort = async (req: Request, res: Response) => {
         return res.status(200).json({
             message: 'Berhasil sorting',
             original: result.original,
-            sorted: result.selected,
+            sorted: result.sorted,
         })
 
     } catch (error) {
         if (error instanceof AppError) throw error
 
-        throw new AppError('Gagal bubble sort data', 500)
+        throw new AppError('Gagal selection sort data', 500)
     }
 }

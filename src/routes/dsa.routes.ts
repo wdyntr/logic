@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { asyncHandler } from "../utils/async-handler";
-import { appendList, arrayList, bubbleSort, deleteList, dequeue, display, displayDB, enqueue, findList, peek, popStack, prependList, pushStack, sizeList, snapshot, top } from "../controllers/dsa.controller";
+import { appendList, arrayList, bubbleSort, deleteList, dequeue, display, displayDB, enqueue, findList, peek, popStack, prependList, pushStack, selectionSort, sizeList, snapshot, top } from "../controllers/dsa.controller";
 import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
@@ -25,5 +25,5 @@ router.get('/toArray', asyncHandler(arrayList))
 router.get('/size', asyncHandler(sizeList))
 // bubble sort
 router.post('/sort/bubble', asyncHandler(bubbleSort))
-router.post('/sort/selection', asyncHandler(bubbleSort))
+router.post('/sort/selection', asyncHandler(selectionSort))
 export default router;
