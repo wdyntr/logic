@@ -381,3 +381,23 @@ async function bubbleSort() {
 
     btn.disabled = false;
 }
+
+async function selectionSort() {
+    const btn = document.querySelector('.selectionSort')
+    btn.disabled = true
+
+    const data = document.getElementById('selection_name')
+    const listSort = data.value.split(",").map(s => Number(s.trim()))
+    console.log(listSort)
+    const res = await callApi(
+        '/api/dsa/sort/selection',
+        'POST',
+        { data: listSort }
+    )
+
+    if (res && res.status === 200) {
+        showToast("success", "Selection sort berhasil");
+    }
+
+    btn.disabled = false;
+}

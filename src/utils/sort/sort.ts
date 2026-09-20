@@ -21,4 +21,26 @@ export class Sort<T> {
 
         return { original: original, sorted: sort }
     }
+
+    selection(item: T[]) {
+        const original = [...item]
+        const select = [...item]
+
+        for (let i = 0; i < select.length - 1; i++) {
+            let minIndex = i
+            for (let j = i + 1; j < select.length; j++) {
+                if (select[j] < select[minIndex]) {
+                    minIndex = j
+                }
+            }
+
+            if (minIndex !== i) {
+                let temp = select[i];
+                select[i] = select[minIndex];
+                select[minIndex] = temp;
+            }
+        }
+
+        return { original: original, selected: select }
+    }
 }

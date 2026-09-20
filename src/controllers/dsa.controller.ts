@@ -330,3 +330,30 @@ export const bubbleSort = async (req: Request, res: Response) => {
         throw new AppError('Gagal bubble sort data', 500)
     }
 }
+
+export const selectionSort = async (req: Request, res: Response) => {
+    try {
+        const { data } = req.body
+
+        if (!data) throw new AppError("Data tidak boleh kosong", 400)
+
+        const isArray = Array.isArray(data)
+        if (!isArray) throw new AppError('Data harus berupa array', 400)
+
+        const isAllNumber = data.every(item => typeof item === 'number');
+        if (!isAllNumber) throw new AppError('Array bukan number', 400)
+
+        const result = sorted.selection(data)
+
+        return res.status(200).json({
+            message: 'Berhasil sorting',
+            original: result.original,
+            sorted: result.selected,
+        })
+
+    } catch (error) {
+        if (error instanceof AppError) throw error
+
+        throw new AppError('Gagal bubble sort data', 500)
+    }
+}

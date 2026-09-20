@@ -25,4 +25,5 @@ router.get('/toArray', asyncHandler(arrayList))
 router.get('/size', asyncHandler(sizeList))
 // bubble sort
 router.post('/sort/bubble', asyncHandler(bubbleSort))
+router.post('/sort/selection', asyncHandler(bubbleSort))
 export default router;
