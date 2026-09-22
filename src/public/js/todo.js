@@ -1,31 +1,29 @@
 let currentPage = 1;
+// todo.js - TAMBAHKAN di DOMContentLoaded (setelah line 15)
+
 
 document.getElementById("baseUrl").value =
   window.API_BASE_URL || window.location.origin;
 
 window.addEventListener("DOMContentLoaded", async () => {
+  window.addEventListener('auth:expired', () => {
+    // Clear local state
+    currentPage = 1
+    // csrfToken di window.api sudah di-handle api.js
+
+    // Update UI
+    document.getElementById("todo-list").innerHTML = '<div class="loading-text">Session expired, silakan login</div>'
+    document.getElementById("page-info").textContent = ''
+
+    // Redirect
+    window.location.href = '/auth'
+  })
+
+  window.api.csrfToken = await window.api.fetchCsrfToken()
+
   setupEventDelegation();
   await loadTodo(1);
 });
-
-function baseUrl() {
-  return (
-    window.API_BASE_URL || document.getElementById("baseUrl").value
-  ).replace(/\/$/, "");
-}
-
-function showResult(status, data) {
-  document.getElementById("status").textContent = "Status: " + status;
-  try {
-    document.getElementById("output").textContent = JSON.stringify(
-      data,
-      null,
-      2,
-    );
-  } catch {
-    document.getElementById("output").textContent = String(data);
-  }
-}
 
 function escapeHtml(text) {
   const div = document.createElement("div");
@@ -44,39 +42,6 @@ function showToast(type, message) {
     toast.classList.add("removing");
     toast.addEventListener("animationend", () => toast.remove());
   }, 3000);
-}
-
-async function callApi(path, method, body, options = {}) {
-  const { retry = true, headers = {} } = options;
-  const requestHeaders = { "Content-Type": "application/json", ...headers };
-
-  try {
-    const res = await fetch(baseUrl() + path, {
-      method,
-      headers: requestHeaders,
-      credentials: "include",
-      body: body ? JSON.stringify(body) : undefined,
-    });
-
-    let data;
-    const contentType = res.headers.get("content-type") || "";
-
-    if (res.status === 204) {
-      data = { message: "No Content" };
-    } else if (contentType.includes("application/json")) {
-      data = await res.json();
-    } else {
-      const text = await res.text();
-      data = text ? { message: text } : { message: "Response bukan JSON" };
-    }
-
-    showResult(res.status, data);
-    return { status: res.status, data };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Terjadi kesalahan";
-    showResult("ERROR", { message });
-    return null;
-  }
 }
 
 function setupEventDelegation() {
@@ -116,14 +81,10 @@ async function createTodo() {
   }
 
   const key = crypto.randomUUID();
-  const res = await callApi(
-    "/api/todos",
-    "POST",
-    { name },
-    {
-      headers: { "Idempotency-key": key },
-    },
-  );
+  const res = await window.api.callApi("/api/todos", "POST", { name }, {
+    headers: { 'Idempotency-key': key },
+    csrfToken: window.api.csrfToken
+  })
 
   if (res && res.status === 201) {
     nameInput.value = "";
@@ -134,14 +95,13 @@ async function createTodo() {
 
 async function toggleTodo(id, currentStatus) {
   const key = crypto.randomUUID();
-  const res = await callApi(
-    `/api/todos/${id}/toggle`,
-    "PATCH",
-    {},
-    {
-      headers: { "Idempotency-key": key },
-    },
-  );
+
+  const res = await window.api.callApi(`/api/todos/${id}/toggle`
+    , "PATCH",
+    null, {
+    headers: { 'Idempotency-key': key },
+    csrfToken: window.api.csrfToken
+  })
 
   if (res && res.status === 200) {
     showToast("success", currentStatus ? "Todo dicentang" : "Todo dikosongkan");
@@ -153,7 +113,10 @@ async function loadTodo(page) {
   const list = document.getElementById("todo-list");
   list.innerHTML = '<div class="loading-text">Memuat...</div>';
 
-  const res = await callApi(`/api/todos?page=${page}&limit=5`, "GET");
+  const res = await window.api.callApi(`/api/todos?page=${page}&limit=5`
+    , "GET",
+    null)
+
   if (res && res.status === 200) {
     const { data, pagination } = res.data;
     currentPage = pagination.page;
@@ -174,9 +137,13 @@ async function loadTodo(page) {
 
 async function deleteTodo(id) {
   const key = crypto.randomUUID();
-  const res = await callApi(`/api/todos/${id}`, "DELETE", undefined, {
-    headers: { "Idempotency-key": key },
-  });
+
+  const res = await window.api.callApi(`/api/todos/${id}`
+    , "DELETE",
+    null, {
+    headers: { 'Idempotency-key': key },
+    csrfToken: window.api.csrfToken
+  })
 
   if (res && (res.status === 200 || res.status === 204)) {
     showToast("success", "Todo berhasil dihapus");

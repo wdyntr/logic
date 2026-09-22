@@ -4,9 +4,14 @@ import { prisma } from "../databases/db";
 import { generateAccessToken, generateRefreshToken, hashToken, REFRESH_TOKEN_EXPIRY_DAYS } from "../utils/token";
 import { AuthRequest } from "../middleware/auth.middleware";
 import { AppError } from "../utils/app-error";
+import { generateCsrfToken } from "../middleware/csrf.middleware";
 
+export const getCsrfToken = async (req: Request, res: Response) => {
+  const csrfToken = generateCsrfToken(req, res)
+  res.json({ csrfToken })
+}
 
-const setAuthCookies = async (res: Response, userId: bigint) => {
+const setAuthCookies = async (req: Request, res: Response, userId: bigint) => {
   const accessToken = generateAccessToken(userId);
   const refreshToken = generateRefreshToken()
 
@@ -55,7 +60,7 @@ export const register = async (req: Request, res: Response) => {
       data: { name, email, password: hashed },
     });
 
-    const tokens = await setAuthCookies(res, user.id);
+    const tokens = await setAuthCookies(req, res, user.id);
 
     res.status(201).json({
       user: { id: user.id.toString(), name: user.name, email: user.email },
@@ -84,7 +89,7 @@ export const login = async (req: Request, res: Response) => {
       throw new AppError('Kredensial salah', 401)
     }
 
-    const tokens = await setAuthCookies(res, user.id);
+    const tokens = await setAuthCookies(req, res, user.id);
 
     res.status(200).json({
       user: { id: user.id.toString(), name: user.name, email: user.email },
@@ -110,6 +115,7 @@ export const logout = async (req: Request, res: Response) => {
 
   res.clearCookie("access_token");
   res.clearCookie('refresh_token', { path: '/' })
+  res.clearCookie("csrf_token");
 
   res.json({ message: "Logout berhasil" });
 };
@@ -209,7 +215,7 @@ export const refresh = async (req: AuthRequest, res: Response) => {
   }
 
   await prisma.refreshToken.delete({ where: { id: stored.id } })
-  const tokens = await setAuthCookies(res, stored.userId)
+  const tokens = await setAuthCookies(req, res, stored.userId)
 
   res.json({ message: 'token diperbarui', ...tokens })
 }
