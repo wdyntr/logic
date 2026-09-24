@@ -13,7 +13,7 @@ router.post("/register", authLimiter, validate(registerSchema), idempotency, asy
 router.post("/login", authLimiter, validate(loginSchema), idempotency, asyncHandler(login));
 router.get("/me", authenticate, asyncHandler(me));
 router.get("/csrf-token", authenticate, asyncHandler(getCsrfToken));
-router.patch("/me", authenticate, doubleCsrfProtection, validate(updateSchema), asyncHandler(update));
+router.patch("/me", authenticate, doubleCsrfProtection, validate(updateSchema), idempotency, asyncHandler(update));
 router.post('/refresh', authLimiter, asyncHandler(refresh))
 router.post('/logout', authenticate, doubleCsrfProtection, asyncHandler(logout))
 

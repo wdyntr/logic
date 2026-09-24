@@ -4,7 +4,7 @@ let waitingCallbacks = []
 // helper untuk get csrf-token
 async function fetchCsrfToken() {
     try {
-        const res = await fetch('/api/auth/csrf-token', { credentials: 'include' })
+        const res = await fetch(baseUrl() + '/api/auth/csrf-token', { credentials: 'include' })
         if (res.ok) return (await res.json()).csrfToken
     } catch (e) {
         console.error('fetchCsrfToken failed:', e)
@@ -14,7 +14,7 @@ async function fetchCsrfToken() {
 
 // post refresh tanpa csrf token
 async function doRefresh() {
-    const res = await fetch('/api/auth/refresh', {
+    const res = await fetch(baseUrl() + '/api/auth/refresh', {
         method: 'POST',
         credentials: 'include'
     })
@@ -42,9 +42,11 @@ function showResult(status, data) {
 // universal callApi
 async function callApi(path, method, body, options = {}) {
     const { retry = true, headers = {}, csrfToken = null } = options
+    const isMutating = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)
+    const skipRetry = path.includes('/refresh') || path.includes('/csrf-token')
     const requestHeaders = { 'Content-Type': 'application/json', ...headers }
 
-    if (csrfToken && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+    if (csrfToken && isMutating) {
         requestHeaders['x-csrf-token'] = csrfToken
     }
 
@@ -70,42 +72,60 @@ async function callApi(path, method, body, options = {}) {
         return { status: res.status, data }
     }
 
-
-    // first attempt
     let result = await doRequest()
+    let hasRefreshed = false
 
-    // auto refresh 
-    if (result?.status === 401 && retry && !path.includes('/refresh') && !path.includes('/csrf-token')) {
-        // mutex kalau ada yang request tunggu
-        if (isRefreshing) {
-            await new Promise((resolve, reject) => waitingCallbacks.push({ resolve, reject }))
-        } else {
-            isRefreshing = true
-            try {
-                const refreshOk = await doRefresh()
-                if (!refreshOk) throw new Error('Refresh failed')
+    // max 2 iterasi: [normal] atau [refresh → retry]
+    for (let i = 0; i < 2; i++) {
 
-                // success ambil csrf tokenbaru
-                const newCsrfToken = await fetchCsrfToken()
-                if (newCsrfToken) window.api.csrfToken = newCsrfToken
-
-                // notif semua yang nunggu 
-                waitingCallbacks.forEach(({ resolve }) => resolve())
-                waitingCallbacks = []
-            } catch (err) {
-                // fail reject semua
-                waitingCallbacks.forEach(({ reject }) => reject(err))
-                waitingCallbacks = []
-                window.dispatchEvent(new CustomEvent('auth:expired'))
-                window.location.href = '/auth'
-                throw err
-            } finally {
-                isRefreshing = false
-            }
+        // HANDLE 403: CSRF INVALID → FETCH TOKEN BARU → RETRY (ONCE)
+        if (result?.status === 403 && retry && isMutating && !skipRetry) {
+            const newCsrfToken = await fetchCsrfToken()
+            if (!newCsrfToken) break
+            window.api.csrfToken = newCsrfToken
+            requestHeaders['x-csrf-token'] = newCsrfToken
+            result = await doRequest()
+            continue  // re-check status dari atas
         }
-        // retry request asli with new token
-        result = await doRequest()
+
+        // HANDLE 401: ACCESS TOKEN EXPIRED → REFRESH → RETRY (ONCE)
+        if (result?.status === 401 && retry && !hasRefreshed && !skipRetry) {
+            hasRefreshed = true
+
+            if (isRefreshing) {
+                await new Promise((resolve, reject) => waitingCallbacks.push({ resolve, reject }))
+            } else {
+                isRefreshing = true
+                try {
+                    const refreshOk = await doRefresh()
+                    if (!refreshOk) throw new Error('Refresh failed')
+
+                    const newCsrfToken = await fetchCsrfToken()
+                    if (newCsrfToken) {
+                        window.api.csrfToken = newCsrfToken
+                        requestHeaders['x-csrf-token'] = newCsrfToken
+                    }
+
+                    waitingCallbacks.forEach(({ resolve }) => resolve())
+                    waitingCallbacks = []
+                } catch (err) {
+                    waitingCallbacks.forEach(({ reject }) => reject(err))
+                    waitingCallbacks = []
+                    window.dispatchEvent(new CustomEvent('auth:expired'))
+                    window.location.href = '/auth'
+                    throw err
+                } finally {
+                    isRefreshing = false
+                }
+            }
+
+            result = await doRequest()
+            continue  // re-check status dari atas → 403 auto ke-handle
+        }
+
+        break  // status selain 401/403 → selesai
     }
+
     return result
 }
 
