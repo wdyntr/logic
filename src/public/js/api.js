@@ -94,6 +94,7 @@ async function callApi(path, method, body, options = {}) {
 
             if (isRefreshing) {
                 await new Promise((resolve, reject) => waitingCallbacks.push({ resolve, reject }))
+                requestHeaders['x-csrf-token'] = window.api.csrfToken
             } else {
                 isRefreshing = true
                 try {
@@ -112,13 +113,13 @@ async function callApi(path, method, body, options = {}) {
                     waitingCallbacks.forEach(({ reject }) => reject(err))
                     waitingCallbacks = []
                     window.dispatchEvent(new CustomEvent('auth:expired'))
-                    window.location.href = '/auth'
+                    if (window.location.pathname !== '/auth') window.location.href = '/auth'
                     throw err
                 } finally {
                     isRefreshing = false
                 }
             }
-
+            requestHeaders['x-csrf-token'] = window.api.csrfToken
             result = await doRequest()
             continue  // re-check status dari atas → 403 auto ke-handle
         }

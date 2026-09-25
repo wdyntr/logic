@@ -20,7 +20,7 @@ export function withLoading(buttonSelector, asyncFn, options = {}) {
         try {
             return await asyncFn(...args);
         } catch (error) {
-            showToast("error", options.errorMsg || error.message || "Gagal");
+            showToast("error", options.errorMsg || error?.message || (typeof error === 'string' ? error : null) || "Gagal");
             throw error;
         } finally {
             btn.disabled = false;

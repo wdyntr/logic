@@ -1,8 +1,12 @@
 import { showToast, withLoading } from "./ui.js";
 
+document.getElementById("baseUrl").value =
+  window.API_BASE_URL || window.location.origin;
+
 window.addEventListener("DOMContentLoaded", async () => {
     window.addEventListener("auth:expired", () => {
         showToast("warning", "Session expired, silakan login ulang");
+        window.location.href = "/auth"
     });
 });
 
@@ -137,3 +141,23 @@ const selectionSort = withLoading(".selectionSort", async () => {
         data.value = "";
     }
 });
+
+// expose ke window agar inline onclick di EJS bisa akses
+window.countDuplikat = countDuplikat;
+window.countStatus = countStatus;
+window.toggleSection = toggleSection;
+window.queue = queue;
+window.queueNext = queueNext;
+window.queueCheck = queueCheck;
+window.pushStack = pushStack;
+window.popStack = popStack;
+window.topStack = topStack;
+window.snapshotStack = snapshotStack;
+window.appendList = appendList;
+window.prependList = prependList;
+window.deleteList = deleteList;
+window.findList = findList;
+window.toArray = toArray;
+window.getSize = getSize;
+window.bubbleSort = bubbleSort;
+window.selectionSort = selectionSort;

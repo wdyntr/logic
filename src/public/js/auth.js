@@ -8,10 +8,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     loginKey = null;
     registerKey = null;
     document.getElementById("active-user").textContent = "Belum Login";
-    window.location.href = "/auth";
   });
 
-  window.api.csrfToken = await window.api.fetchCsrfToken();
   await checkMe();
 });
 
@@ -39,9 +37,11 @@ async function register() {
       window.api.csrfToken = await window.api.fetchCsrfToken();
     } else {
       document.getElementById("active-user").textContent = "Belum Login";
+      showToast('error', res.data?.message)
     }
   } catch (err) {
     document.getElementById("active-user").textContent = "Belum Login";
+    showToast('error', err.message)
   } finally {
     registerKey = null;
     btn.disabled = false;
@@ -69,10 +69,12 @@ async function login() {
         `${res.data.user.name} (${res.data.user.email})`;
       window.api.csrfToken = await window.api.fetchCsrfToken();
     } else {
+      showToast('error', res.data?.message)
       document.getElementById("active-user").textContent = "Belum Login";
     }
   } catch (err) {
     document.getElementById("active-user").textContent = "Belum Login";
+    showToast('error', err.message)
   } finally {
     loginKey = null;
     btn.disabled = false;
@@ -143,3 +145,9 @@ async function updateProfile() {
     showToast("error", error.message || "Update profile failed");
   }
 }
+
+// expose ke window agar inline onclick di EJS bisa akses
+window.register = register;
+window.login = login;
+window.toggleEditProfile = toggleEditProfile;
+window.updateProfile = updateProfile;

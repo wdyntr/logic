@@ -1,5 +1,5 @@
 // auth.validator.test.ts
-import { registerSchema, loginSchema } from "../../validators/auth.validator";
+import { registerSchema, loginSchema, updateSchema } from "../../validators/auth.validator";
 
 describe("registerSchema", () => {
   it("should pass with valid data", () => {
@@ -53,5 +53,14 @@ describe("loginSchema", () => {
       password: "1234567",
     });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("updateSchema", () => {
+  it("should pass with email only (partial update)", () => {
+    expect(updateSchema.safeParse({ email: "a@b.com" }).success).toBe(true);
+  });
+  it("should fail with empty name", () => {
+    expect(updateSchema.safeParse({ name: "" }).success).toBe(false);
   });
 });

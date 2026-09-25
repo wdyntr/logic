@@ -1,3 +1,4 @@
+import { env } from './config/env';
 import app from './app'
 import { cleanUpIdempotencyKeys } from './jobs/cleanup-idempotency';
 

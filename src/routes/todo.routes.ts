@@ -14,8 +14,8 @@ router.use(authenticate, apiLimiter);
 
 router.get("/", asyncHandler(index));
 router.post("/", doubleCsrfProtection, validate(createTodoSchema), idempotency, asyncHandler(store));
-router.patch("/:id", doubleCsrfProtection, validate(updateTodoSchema), idempotency, asyncHandler(update));
+router.patch("/:id", doubleCsrfProtection, validate(updateTodoSchema), validateParams(todoIdParamSchema), idempotency, asyncHandler(update));
 router.patch("/:id/toggle", doubleCsrfProtection, validateParams(todoIdParamSchema), idempotency, asyncHandler(toggle));
-router.delete("/:id", doubleCsrfProtection, validateParams(todoIdParamSchema), asyncHandler(destroy));
+router.delete("/:id", doubleCsrfProtection, validateParams(todoIdParamSchema), idempotency, asyncHandler(destroy));
 
 export default router;

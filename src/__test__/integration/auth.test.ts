@@ -1,24 +1,20 @@
+import { loginWithCsrf } from '../helper';
 import request from 'supertest'
 import app from '../test-app'
 import { cleanUpDatabase, disconnectDatabase } from '../setup'
 
-let cookies: string;
+let auth: { cookie: string; csrfToken: string };
 
 beforeAll(async () => {
     await cleanUpDatabase();
 
-    // Register
+    // Register: route ini TIDAK punya doubleCsrfProtection → polos saja ✓
     await request(app)
         .post("/api/auth/register")
         .send({ name: "Budi", email: "budi@test.com", password: "password123" });
 
-    // Login (untuk pastikan cookie valid)
-    const res = await request(app)
-        .post("/api/auth/login")
-        .send({ email: "budi@test.com", password: "password123" });
-
-    const raw = res.headers["set-cookie"];
-    cookies = Array.isArray(raw) ? raw[0] : (raw ?? "");
+    // Login + csrf token dalam 1 langkah — hasilnya sudah berupa string siap pakai
+    auth = await loginWithCsrf(app, "budi@test.com", "password123");
 });
 
 describe("POST /api/auth/register", () => {
@@ -35,7 +31,7 @@ describe("POST /api/auth/register", () => {
             .post("/api/auth/register")
             .send({ name: "toro", email: "toro@test.com", password: "password123" });
 
-        expect(res.status).toBe(400);
+        expect(res.status).toBe(409);
     });
     // ... test lainnya
 });
@@ -71,7 +67,7 @@ describe("GET /api/auth/me", () => {
     it("should return current user", async () => {
         const res = await request(app)
             .get("/api/auth/me")
-            .set("Cookie", cookies);  // cookie dari login/register
+            .set("Cookie", auth.cookie);  // cookie dari login/register
 
         expect(res.status).toBe(200);
     });
@@ -91,8 +87,8 @@ describe("PATCH /api/auth/me", () => {
         const res = await request(app)
             .patch("/api/auth/me")
             .send({ name: 'toro (budi update)' })
-            .set("Cookie", cookies);
-
+            .set("Cookie", auth.cookie)
+            .set("x-csrf-token", auth.csrfToken)
         expect(res.status).toBe(200);
     });
 
@@ -100,8 +96,8 @@ describe("PATCH /api/auth/me", () => {
         const res = await request(app)
             .patch("/api/auth/me")
             .send({ email: 'toronew@test.com' })
-            .set("Cookie", cookies);
-
+            .set("Cookie", auth.cookie)
+            .set("x-csrf-token", auth.csrfToken)
         expect(res.status).toBe(200);
     });
 
@@ -109,6 +105,7 @@ describe("PATCH /api/auth/me", () => {
         const res = await request(app)
             .patch("/api/auth/me")
             .send({ email: 'toronew@test.com' })
+            .set("x-csrf-token", auth.csrfToken)
 
         expect(res.status).toBe(401);
     });
@@ -117,8 +114,8 @@ describe("PATCH /api/auth/me", () => {
         const res = await request(app)
             .patch("/api/auth/me")
             .send({ password: 'newpass123', currentPassword: 'password123' })
-            .set("Cookie", cookies);
-
+            .set("Cookie", auth.cookie)
+            .set("x-csrf-token", auth.csrfToken)
         expect(res.status).toBe(200);
     });
 

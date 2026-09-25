@@ -203,6 +203,9 @@ export const update = async (req: AuthRequest, res: Response) => {
 
 export const refresh = async (req: AuthRequest, res: Response) => {
   const token = req.cookies?.refresh_token;
+
+  res.clearCookie('access_token')
+  res.clearCookie('refresh_token', { path: '/' })
   if (!token)
     throw new AppError('Refresh token tidak ada', 401)
 
@@ -211,10 +214,14 @@ export const refresh = async (req: AuthRequest, res: Response) => {
 
   if (!stored || stored.expiresAt < new Date()) {
     throw new AppError('Refresh token tidak valid atau kadaluarsa', 401)
-
   }
 
-  await prisma.refreshToken.delete({ where: { id: stored.id } })
+  try {
+    await prisma.refreshToken.delete({ where: { id: stored.id } })
+  } catch (e: any) {
+    if (e?.code === 'P2025') throw new AppError('Refresh token sudah dipakai', 401)
+    throw e
+  }
   const tokens = await setAuthCookies(req, res, stored.userId)
 
   res.json({ message: 'token diperbarui', ...tokens })

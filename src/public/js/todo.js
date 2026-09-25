@@ -149,3 +149,13 @@ async function deleteTodo(id) {
     showToast("error", error.message || "Todo gagal dihapus");
   }
 }
+
+// expose ke window agar inline onclick di EJS bisa akses
+window.createTodo = createTodo;
+window.loadTodo = loadTodo;
+window.deleteTodo = deleteTodo;
+window.toggleTodo = toggleTodo;
+Object.defineProperty(window, "currentPage", {
+  get: () => currentPage,
+  set: (v) => { currentPage = v; },
+});
