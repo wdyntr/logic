@@ -8,16 +8,18 @@ import dsaRoutes from './routes/dsa.routes'
 import { Request, Response, NextFunction } from "express";
 import { authPage, dsaPAge, homepage, todoPage } from './controllers/public.controller'
 import { AppError } from './utils/app-error'
+import { env } from './config/env'
 
 
 const app = express()
+const PORT = env.PORT
 
 app.use(
   cors({
     origin: [
-      "http://localhost:3001",
-      "http://127.0.0.1:3001",
-      "http://0.0.0.0:3001",
+      `http://localhost:${PORT}`,
+      `http://127.0.0.1:${PORT}`,
+      `http://0.0.0.0:${PORT}`,
     ],
     credentials: true,
     methods: ["GET", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],

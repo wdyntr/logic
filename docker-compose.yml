@@ -6,13 +6,11 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      - "${PORT:-3001}:${PORT:-3001}"
     volumes:
       - ./:/app:Z
       # Pastikan anonymous volume untuk node_modules mengarah ke /app
       - /app/node_modules
-    env_file:
-      - .env.docker
     depends_on:
       - logic-psql
 

@@ -2,7 +2,7 @@ import rateLimit from "express-rate-limit";
 
 export const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 min
-    limit: 5, // maks 5 percobaan 
+    limit: 10, // maks 5 percobaan 
     standardHeaders: true,
     legacyHeaders: false,
     skip: () => Boolean(process.env.JEST_WORKER_ID),

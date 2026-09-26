@@ -2,6 +2,8 @@ import { showToast } from "./ui.js";
 
 let loginKey = null;
 let registerKey = null;
+document.getElementById("baseUrl").value =
+  window.API_BASE_URL || window.location.origin;
 
 window.addEventListener("DOMContentLoaded", async () => {
   window.addEventListener("auth:expired", () => {
@@ -9,6 +11,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     registerKey = null;
     document.getElementById("active-user").textContent = "Belum Login";
   });
+
+  const notice = sessionStorage.getItem('auth_notice')
+  if (notice) { showToast('info', notice); sessionStorage.removeItem('auth_notice') }
 
   await checkMe();
 });

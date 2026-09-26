@@ -113,7 +113,10 @@ async function callApi(path, method, body, options = {}) {
                     waitingCallbacks.forEach(({ reject }) => reject(err))
                     waitingCallbacks = []
                     window.dispatchEvent(new CustomEvent('auth:expired'))
-                    if (window.location.pathname !== '/auth') window.location.href = '/auth'
+                    const goingToAuth = window.location.pathname !== '/auth'
+                    if (goingToAuth) sessionStorage.setItem('auth_notice', 'Silakan login terlebih dahulu')
+                    window.dispatchEvent(new CustomEvent('auth:expired'))
+                    if (goingToAuth) window.location.href = '/auth'
                     throw err
                 } finally {
                     isRefreshing = false

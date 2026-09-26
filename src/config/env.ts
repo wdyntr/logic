@@ -12,6 +12,7 @@ for (const key of required) {
 }
 
 export const env = {
+  PORT: Number(process.env.PORT || 3001),
   JWT_SECRET: process.env.JWT_SECRET!,
   CSRF_SECRET: process.env.CSRF_SECRET!,
   DATABASE_URL: process.env.DATABASE_URL!,
