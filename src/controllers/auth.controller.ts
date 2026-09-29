@@ -5,6 +5,7 @@ import { generateAccessToken, generateRefreshToken, hashToken, REFRESH_TOKEN_EXP
 import { AuthRequest } from "../middleware/auth.middleware";
 import { AppError } from "../utils/app-error";
 import { generateCsrfToken } from "../middleware/csrf.middleware";
+import { getCache, invalidateUserMe, meKey, setCache } from "../utils/cache";
 
 export const getCsrfToken = async (req: Request, res: Response) => {
   const csrfToken = generateCsrfToken(req, res)
@@ -122,23 +123,31 @@ export const logout = async (req: Request, res: Response) => {
 
 export const me = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.userId!
+
+    const key = await meKey(userId);
+
+    const cached = await getCache(key);
+    if (cached) return res.json(cached);
+
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
     });
-
     if (!user) throw new AppError('User tidak ditemukan', 404)
 
-    res.json({
-      user: {
-        id: user.id.toString(),
-        name: user.name,
-        email: user.email,
-      },
-    });
+    const userResponse = {
+      id: user.id.toString(),
+      name: user.name,
+      email: user.email,
+    };
+
+    await setCache(key, userResponse);
+
+    res.json({ user: userResponse });
+
   } catch (error) {
     if (error instanceof AppError)
       throw error
-
 
     console.error("[me]", error);
 
@@ -183,6 +192,8 @@ export const update = async (req: AuthRequest, res: Response) => {
       where: { id: userId },
       data
     })
+
+    await invalidateUserMe(userId)
 
     res.status(200).json({
       user: { id: updated.id.toString(), name: updated.name, email: updated.email }

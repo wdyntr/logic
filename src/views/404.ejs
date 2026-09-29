@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 - Halaman Tidak Ditemukan - SaaS API</title>
+  <link href="/css/base.css" rel="stylesheet" />
+  <style>
+    nav { margin-bottom: 20px; padding: 10px 0; border-bottom: 1px solid #ddd; }
+    nav a { margin-right: 16px; text-decoration: none; color: #333;
+            font-weight: bold; font-family: monospace; }
+    nav a:hover { text-decoration: underline; }
+
+    .notfound { max-width: 500px; margin: 60px auto; text-align: center;
+                font-family: monospace; }
+    .notfound h1 { font-size: 72px; margin: 0; }
+    .notfound p  { color: #666; }
+    .notfound .back {
+      display: inline-block; margin-top: 16px; padding: 10px 20px;
+      background: white; border: 1px solid #ddd; border-radius: 8px;
+      color: #333; text-decoration: none; font-family: monospace;
+    }
+    .notfound .back:hover { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/auth">Auth</a>
+    <a href="/todo">Todo List</a>
+    <a href="/dsa">DSA</a>
+  </nav>
+
+  <div class="notfound">
+    <h1>404</h1>
+    <p>Halaman tidak ditemukan.</p>
+    <p>URL yang Anda tuju tidak tersedia — mungkin salah ketik atau sudah dipindah.</p>
+    <a href="/" class="back">&larr; Kembali ke Home</a>
+  </div>
+</body>
+</html>

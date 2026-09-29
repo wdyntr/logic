@@ -5,11 +5,9 @@ import path from 'path'
 import authRoutes from './routes/auth.routes'
 import todoRoutes from './routes/todo.routes'
 import dsaRoutes from './routes/dsa.routes'
-import { Request, Response, NextFunction } from "express";
 import { authPage, dsaPAge, homepage, todoPage } from './controllers/public.controller'
-import { AppError } from './utils/app-error'
 import { env } from './config/env'
-
+import { notFoundHandler, errorHandler } from './middleware/error.middleware'
 
 const app = express()
 const PORT = env.PORT
@@ -49,22 +47,8 @@ app.use('/api/auth', authRoutes)
 app.use('/api/todos', todoRoutes)
 app.use('/api/dsa', dsaRoutes)
 
-app.use('/api', (req, res) => {
-  res.status(404).json({ message: 'Route tidak ditemukan' });
-});
-
-
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  const statusCode = err instanceof AppError ? err.statusCode : 500
-  const message = err instanceof AppError ? err.message : 'Terjadi kesalahan pada server'
-
-  const response: any = { message }
-
-  if (process.env.NODE_ENV === 'local') {
-    response.stack = err.stack
-  }
-
-  res.status(statusCode).json(response)
-});
+app.use('/api', notFoundHandler)
+app.use((req, res) => res.status(404).render('404'))
+app.use(errorHandler);
 
 export default app

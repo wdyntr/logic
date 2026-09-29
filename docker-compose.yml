@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   logic:
     container_name: logic
@@ -13,6 +11,7 @@ services:
       - /app/node_modules
     depends_on:
       - logic-psql
+      - redis
 
   logic-psql:
     image: docker.io/library/postgres:16-alpine
@@ -26,6 +25,12 @@ services:
       - POSTGRES_PASSWORD=root
     volumes:
       - logic-db:/var/lib/postgresql/data:Z
+
+  redis:
+    image: docker.io/library/redis:7-alpine
+    container_name: logic-redis
+    redis_password: root
+    restart: unless-stopped
 
 volumes:
   logic-db:

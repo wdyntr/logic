@@ -4,31 +4,32 @@ import { AuthRequest } from "../middleware/auth.middleware";
 import { serializeTodo, serializeTodos } from "../utils/serializer";
 import { AppError } from "../utils/app-error";
 
+import { getCache, setCache, todoKey, invalidateUserTodos } from '../utils/cache';
+
 export const index = async (req: AuthRequest, res: Response) => {
   const userId = req.userId!;
-  const where = { userId };
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
-  const limit = Math.min(
-    100,
-    Math.max(1, parseInt(req.query.limit as string) || 10),
-  );
-  const skip = (page - 1) * limit;
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10));
+  const key = await todoKey(userId, page, limit);  // todoKey sekarang async
 
+  const cached = await getCache(key);
+  if (cached) return res.json(cached);
+
+  const skip = (page - 1) * limit;
   const [todos, total] = await Promise.all([
-    prisma.todo.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip,
-      take: limit,
-    }),
-    prisma.todo.count({ where }),
+    prisma.todo.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, skip, take: limit }),
+    prisma.todo.count({ where: { userId } }),
   ]);
 
-  res.json({
+  const result = {
     data: serializeTodos(todos),
     pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
-  });
+  };
+
+  await setCache(key, result);
+  res.json(result);
 };
+
 
 export const store = async (req: AuthRequest, res: Response) => {
   const { name } = req.body;
@@ -46,7 +47,8 @@ export const store = async (req: AuthRequest, res: Response) => {
 
         return await tx.todo.create({ data: { userId, name, status: false } });
       }, { isolationLevel: 'Serializable' });
-
+      
+      await invalidateUserTodos(userId);
       return res.status(201).json({ message: "Berhasil menyimpan data Todo", data: serializeTodo(cek) });
     } catch (error: any) {
       if (error?.code === "P2034" && attempt < MAX_RETRY - 1) continue; // retry, transparan ke user
@@ -73,6 +75,7 @@ export const toggle = async (req: AuthRequest, res: Response) => {
       where: { id },
       data: { status: !todo.status },
     });
+    await invalidateUserTodos(userId);
 
     res.status(200).json({ message: "Berhasil toggle status", data: serializeTodo(hasil) });
   } catch (error) {
@@ -99,6 +102,7 @@ export const update = async (req: AuthRequest, res: Response) => {
       throw new AppError('Tidak ada data yang diupdate', 400);
 
     const hasil = await prisma.todo.update({ where: { id }, data });
+    await invalidateUserTodos(userId);
     res.status(200).json({ message: "Berhasil update todo", data: serializeTodo(hasil) });
   } catch (error) {
     if (error instanceof AppError) throw error;
@@ -117,6 +121,8 @@ export const destroy = async (req: AuthRequest, res: Response) => {
   const hasil = await prisma.todo.delete({
     where: { id, userId },
   });
+  await invalidateUserTodos(userId);
+
   if (hasil) {
     res.status(200).json({ message: 'Todo berhasil dihapus' });
   } else {
