@@ -5,6 +5,7 @@ import { serializeTodo, serializeTodos } from "../utils/serializer";
 import { AppError } from "../utils/app-error";
 
 import { getCache, setCache, todoKey, invalidateUserTodos } from '../utils/cache';
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
 export const index = async (req: AuthRequest, res: Response) => {
   const userId = req.userId!;
@@ -47,12 +48,16 @@ export const store = async (req: AuthRequest, res: Response) => {
 
         return await tx.todo.create({ data: { userId, name, status: false } });
       }, { isolationLevel: 'Serializable' });
-      
+
       await invalidateUserTodos(userId);
       return res.status(201).json({ message: "Berhasil menyimpan data Todo", data: serializeTodo(cek) });
     } catch (error: any) {
-      if (error?.code === "P2034" && attempt < MAX_RETRY - 1) continue; // retry, transparan ke user
-      if (error?.code === "P2034") throw new AppError('Server sibuk, coba lagi', 409); // pesan netral, bukan "limit"
+      console.error('CREATE RAW:', error);
+      if (error instanceof PrismaClientKnownRequestError) {
+        const transient = ['P2034', 'P2028', 'P2024'].includes(error.code);
+        if (transient && attempt < MAX_RETRY - 1) continue;
+        if (transient) throw new AppError('Server sibuk, coba lagi', 409);
+      }
       if (error instanceof AppError) throw error;
       throw new AppError('Gagal Menyimpan todo', 500);
     }
