@@ -7,8 +7,16 @@ export const notFoundHandler = (req: Request, res: Response, next: NextFunction)
 };
 
 export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
-    const statusCode = err instanceof AppError ? err.statusCode : 500
-    const message = err instanceof AppError ? err.message : 'Terjadi kesalahan pada server'
+    const e = err as { statusCode?: number; status?: number }
+    const statusCode = err instanceof AppError ? err.statusCode
+                     : typeof e.statusCode === 'number' ? e.statusCode
+                     : typeof e.status === 'number' ? e.status
+                     : 500
+    const message = err instanceof AppError ? err.message
+                  : statusCode < 500 && err.message ? err.message
+                  : 'Terjadi kesalahan pada server'
+
+    if (statusCode >= 500) console.error('[errorHandler]', err)
 
     const response: any = { message }
 
