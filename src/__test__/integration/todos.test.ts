@@ -115,11 +115,6 @@ describe("POST /api/todos", () => {
         }
 
         console.log("INCOMPLETE SEBELUM CLEANUP:", todos.filter((t: any) => t.status === false).length);
-        const verifyRes = await request(app)
-            .get("/api/todos")
-            .set("Cookie", auth.cookie)
-            .set("x-csrf-token", auth.csrfToken)
-
 
         expect(todos.filter((t: any) => t.status === false).length).toBeLessThanOrEqual(5);
     });
@@ -131,6 +126,42 @@ describe("POST /api/todos", () => {
             .send({ name: 'todo 7' });
 
         expect(res.status).toBe(401);
+    });
+
+    it('toggle race condition - genap harus kembali ke status awal', async () => {
+        // 1. Buat 1 todo baru, catat statusnya (harusnya false)
+        const created = await request(app)
+            .post("/api/todos")
+            .set("Cookie", auth.cookie)
+            .set("x-csrf-token", auth.csrfToken)
+            .send({ name: "todo for toggle" });
+
+        const id = created.body.data.id;
+
+        // 2. Kirim 2 request PATCH /:id/toggle BERSAMAAN (Promise.all)
+        const [res1, res2] = await Promise.all([
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken),
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken)
+        ])
+
+        // 3. Setelah itu, GET todo itu lagi, cek status FINAL-nya
+        const get = await request(app)
+            .get(`/api/todos/${id}`)
+            .set("Cookie", auth.cookie)
+            .set("x-csrf-token", auth.csrfToken)
+
+        const status = get.body.data.status
+
+        // 4. expect status akhir HARUS false (karena 2x toggle = genap = balik ke awal)
+        expect(res1.status).toBe(200);   // ← kalau gagal, pesannya jelas
+        expect(res2.status).toBe(200);
+        expect(status).toBe(false);
     });
 });
 

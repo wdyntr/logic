@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/auth.middleware";
 import { idempotency } from "../middleware/idempotency.middleware";
-import { destroy, index, store, toggle, update } from "../controllers/todo.controller";
+import { destroy, getId, index, store, toggle, update } from "../controllers/todo.controller";
 import { validate, validateParams } from "../middleware/validate.middleware";
 import { createTodoSchema, updateTodoSchema, todoIdParamSchema } from "../validators/todo.validator";
 import { apiLimiter } from "../middleware/rateLimit.middleware";
@@ -13,9 +13,10 @@ const router = Router();
 router.use(authenticate, apiLimiter);
 
 router.get("/", asyncHandler(index));
+router.get("/:id", asyncHandler(getId));
 router.post("/", doubleCsrfProtection, validate(createTodoSchema), idempotency, asyncHandler(store));
 router.patch("/:id", doubleCsrfProtection, validate(updateTodoSchema), validateParams(todoIdParamSchema), idempotency, asyncHandler(update));
-router.patch("/:id/toggle", doubleCsrfProtection, validateParams(todoIdParamSchema), idempotency, asyncHandler(toggle));
+router.patch("/:id/toggle", doubleCsrfProtection, validateParams(todoIdParamSchema), asyncHandler(toggle));
 router.delete("/:id", doubleCsrfProtection, validateParams(todoIdParamSchema), idempotency, asyncHandler(destroy));
 
 export default router;

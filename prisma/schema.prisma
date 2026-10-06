@@ -26,7 +26,6 @@ model Todo {
   status    Boolean   @default(false) @map("status")
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
   @@index([userId, status])
   @@map("todos")
 }

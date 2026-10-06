@@ -5,7 +5,6 @@ import { serializeTodo, serializeTodos } from "../utils/serializer";
 import { AppError } from "../utils/app-error";
 
 import { getCache, setCache, todoKey, invalidateUserTodos } from '../utils/cache';
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
 export const index = async (req: AuthRequest, res: Response) => {
   const userId = req.userId!;
@@ -53,10 +52,13 @@ export const store = async (req: AuthRequest, res: Response) => {
       return res.status(201).json({ message: "Berhasil menyimpan data Todo", data: serializeTodo(cek) });
     } catch (error: any) {
       console.error('CREATE RAW:', error);
-      if (error instanceof PrismaClientKnownRequestError) {
-        const transient = ['P2034', 'P2028', 'P2024'].includes(error.code);
-        if (transient && attempt < MAX_RETRY - 1) continue;
-        if (transient) throw new AppError('Server sibuk, coba lagi', 409);
+      const transientCodes = ['P2034', 'P2028', 'P2024'];
+      const isTransient = transientCodes.includes(error?.code)
+        || (error?.name === 'DriverAdapterError' && error?.message === 'TransactionWriteConflict');
+
+      if (isTransient) {
+        if (attempt < MAX_RETRY - 1) continue;
+        throw new AppError('Server sibuk, coba lagi', 409);
       }
       if (error instanceof AppError) throw error;
       throw new AppError('Gagal Menyimpan todo', 500);
@@ -65,28 +67,33 @@ export const store = async (req: AuthRequest, res: Response) => {
 };
 
 export const toggle = async (req: AuthRequest, res: Response) => {
-  try {
-    const id = BigInt(req.params.id);
-    const userId = req.userId!;
-    const todo = await prisma.todo.findFirst({
-      where: { id, userId },
-    });
+  const id = BigInt(req.params.id);
+  const userId = req.userId!;
+  const MAX_RETRY = 3;
 
-    if (!todo) {
-      throw new AppError('Todo tidak ditemukan', 404)
+  for (let attempt = 0; attempt < MAX_RETRY; attempt++) {
+    try {
+      const hasil = await prisma.$transaction(async (tx) => {
+        const todo = await tx.todo.findFirst({ where: { id, userId } });
+        if (!todo) throw new AppError('Todo tidak ditemukan', 404);
+        return tx.todo.update({ where: { id, userId }, data: { status: !todo.status } });
+      }, { isolationLevel: 'Serializable' });
+
+      await invalidateUserTodos(userId);
+      return res.status(200).json({ message: "Berhasil toggle status", data: serializeTodo(hasil) });
+    } catch (error: any) {
+      console.error('TOGGLE RAW:', error);
+      const transientCodes = ['P2034', 'P2028', 'P2024'];
+      const isTransient = transientCodes.includes(error?.code)
+        || (error?.name === 'DriverAdapterError' && error?.message === 'TransactionWriteConflict');
+
+      if (isTransient) {
+        if (attempt < MAX_RETRY - 1) continue;
+        throw new AppError('Server sibuk, coba lagi', 409);
+      }
+      if (error instanceof AppError) throw error;
+      throw new AppError('Gagal toggle todo', 500);
     }
-
-    const hasil = await prisma.todo.update({
-      where: { id },
-      data: { status: !todo.status },
-    });
-    await invalidateUserTodos(userId);
-
-    res.status(200).json({ message: "Berhasil toggle status", data: serializeTodo(hasil) });
-  } catch (error) {
-    if (error instanceof AppError) throw error
-
-    throw new AppError('Gagal toggle todo', 500)
   }
 };
 
@@ -130,6 +137,22 @@ export const destroy = async (req: AuthRequest, res: Response) => {
 
   if (hasil) {
     res.status(200).json({ message: 'Todo berhasil dihapus' });
+  } else {
+    throw new AppError('Hapus data gagal', 500)
+  }
+};
+
+
+export const getId = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId!;
+  const id = BigInt(String(req.params.id));
+  const todo = await prisma.todo.findFirst({
+    where: { id, userId },
+  });
+  if (!todo) throw new AppError('Todo tidak ditemukan', 404)
+
+  if (todo) {
+    res.status(200).json({ message: 'Todo berhasil ditemukan', data: serializeTodo(todo) });
   } else {
     throw new AppError('Hapus data gagal', 500)
   }

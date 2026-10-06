@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import path from 'path'
+import adminRoutes from './routes/admin.routes'
 import authRoutes from './routes/auth.routes'
 import todoRoutes from './routes/todo.routes'
 import dsaRoutes from './routes/dsa.routes'
@@ -46,6 +47,9 @@ app.set('views', path.join(__dirname, 'views'))
 app.use('/api/auth', authRoutes)
 app.use('/api/todos', todoRoutes)
 app.use('/api/dsa', dsaRoutes)
+
+// tes n+1 query
+app.use('/api/admin', adminRoutes)
 
 app.use('/api', notFoundHandler)
 app.use((req, res) => res.status(404).render('404'))
