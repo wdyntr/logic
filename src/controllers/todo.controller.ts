@@ -74,16 +74,27 @@ export const toggle = async (req: AuthRequest, res: Response) => {
   for (let attempt = 0; attempt < MAX_RETRY; attempt++) {
     try {
       const hasil = await prisma.$transaction(async (tx) => {
-        const todo = await tx.todo.findFirst({ where: { id, userId } });
+        const rows = await tx.$queryRaw<{ id: bigint; status: boolean }[]>`
+            SELECT id, status
+            FROM todos
+            WHERE id = ${id} AND user_id = ${userId}
+            FOR UPDATE
+          `;
+
+        const todo = rows[0];
         if (!todo) throw new AppError('Todo tidak ditemukan', 404);
-        return tx.todo.update({ where: { id, userId }, data: { status: !todo.status } });
-      }, { isolationLevel: 'Serializable' });
+
+        return tx.todo.update({
+          where: { id, userId },
+          data: { status: !todo.status },
+        });
+      });
 
       await invalidateUserTodos(userId);
       return res.status(200).json({ message: "Berhasil toggle status", data: serializeTodo(hasil) });
     } catch (error: any) {
       console.error('TOGGLE RAW:', error);
-      const transientCodes = ['P2034', 'P2028', 'P2024'];
+      const transientCodes = ['P2034', 'P2028', 'P2024', 'P2010'];
       const isTransient = transientCodes.includes(error?.code)
         || (error?.name === 'DriverAdapterError' && error?.message === 'TransactionWriteConflict');
 
