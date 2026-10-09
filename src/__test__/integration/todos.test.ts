@@ -163,6 +163,110 @@ describe("POST /api/todos", () => {
         expect(res2.status).toBe(200);
         expect(status).toBe(false);
     });
+
+    it('toggle 3x toggle', async () => {
+        // 1. Buat 1 todo baru, catat statusnya (harusnya false)
+        const created = await request(app)
+            .post("/api/todos")
+            .set("Cookie", auth.cookie)
+            .set("x-csrf-token", auth.csrfToken)
+            .send({ name: "todo for toggle3" });
+
+        const id = created.body.data.id;
+
+        // 2. Kirim 2 request PATCH /:id/toggle BERSAMAAN (Promise.all)
+        await Promise.all([
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken),
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken),
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken),
+        ])
+
+        // 3. Setelah itu, GET todo itu lagi, cek status FINAL-nya
+        const get = await request(app)
+            .get(`/api/todos/${id}`)
+            .set("Cookie", auth.cookie)
+            .set("x-csrf-token", auth.csrfToken)
+
+        const status = get.body.data.status
+
+        // 4. expect status akhir HARUS false (karena 2x toggle = genap = balik ke awal)
+        expect(status).toBe(true);
+    });
+
+    it('toggle 10x toggle', async () => {
+        // 1. Buat 1 todo baru, catat statusnya (harusnya false)
+        const created = await request(app)
+            .post("/api/todos")
+            .set("Cookie", auth.cookie)
+            .set("x-csrf-token", auth.csrfToken)
+            .send({ name: "todo for toggle10" });
+
+        const id = created.body.data.id;
+
+        // 2. Kirim 2 request PATCH /:id/toggle BERSAMAAN (Promise.all)
+        await Promise.all([
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken),
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken),
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken),
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken),
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken),
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken),
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken),
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken),
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken),
+            request(app)
+                .patch(`/api/todos/${id}/toggle`)
+                .set("Cookie", auth.cookie)
+                .set("x-csrf-token", auth.csrfToken)
+        ])
+
+        // 3. Setelah itu, GET todo itu lagi, cek status FINAL-nya
+        const get = await request(app)
+            .get(`/api/todos/${id}`)
+            .set("Cookie", auth.cookie)
+            .set("x-csrf-token", auth.csrfToken)
+
+        const status = get.body.data.status
+
+        // 4. expect status akhir HARUS false (karena 2x toggle = genap = balik ke awal)
+        expect(status).toBe(false);
+    });
 });
 
 describe("GET /api/todos", () => {
