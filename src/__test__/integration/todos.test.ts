@@ -64,7 +64,7 @@ describe("POST /api/todos", () => {
 
         const statuses = res.map(r => r.status);
         const successCount = statuses.filter(s => s === 201).length;
-        console.log("RACE STATUSES:", statuses);
+        // console.log("RACE STATUSES:", statuses);
         expect(successCount).toBeLessThanOrEqual(5);
         expect(statuses.every(s => s === 201 || s === 406 || s === 409)).toBe(true);
 
@@ -114,7 +114,7 @@ describe("POST /api/todos", () => {
                 .set("x-csrf-token", auth.csrfToken)
         }
 
-        console.log("INCOMPLETE SEBELUM CLEANUP:", todos.filter((t: any) => t.status === false).length);
+        // console.log("INCOMPLETE SEBELUM CLEANUP:", todos.filter((t: any) => t.status === false).length);
 
         expect(todos.filter((t: any) => t.status === false).length).toBeLessThanOrEqual(5);
     });
