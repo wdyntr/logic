@@ -4,7 +4,7 @@ import { AuthRequest } from "../middleware/auth.middleware";
 import { serializeTodo, serializeTodos } from "../utils/serializer";
 import { AppError } from "../utils/app-error";
 
-import { getCache, setCache, todoKey, invalidateUserTodos } from '../utils/cache';
+import { getCache, setCache, todoKey, invalidateUserTodos, withSingleflight } from '../utils/cache';
 
 export const index = async (req: AuthRequest, res: Response) => {
   const userId = req.userId!;
@@ -15,18 +15,19 @@ export const index = async (req: AuthRequest, res: Response) => {
   const cached = await getCache(key);
   if (cached) return res.json(cached);
 
-  const skip = (page - 1) * limit;
-  const [todos, total] = await Promise.all([
-    prisma.todo.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, skip, take: limit }),
-    prisma.todo.count({ where: { userId } }),
-  ]);
+  const result = await withSingleflight(key, async () => {
+    const skip = (page - 1) * limit
+    const [todos, total] = await Promise.all([prisma.todo.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, skip, take: limit }),
+    prisma.todo.count({ where: { userId } }),])
 
-  const result = {
-    data: serializeTodos(todos),
-    pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
-  };
+    const built = {
+      data: serializeTodos(todos),
+      pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    }
+    await setCache(key, built);
+    return built
+  })
 
-  await setCache(key, result);
   res.json(result);
 };
 
@@ -92,7 +93,7 @@ export const toggle = async (req: AuthRequest, res: Response) => {
     return res.status(200).json({ message: "Berhasil toggle status", data: serializeTodo(hasil) });
   } catch (error: any) {
     console.error('TOGGLE RAW:', error);
-    
+
     if (error instanceof AppError) throw error;
     throw new AppError('Gagal toggle todo', 500);
   }

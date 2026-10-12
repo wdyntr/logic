@@ -50,3 +50,19 @@ export async function invalidateUserMe(userId: string | number | bigint) {
         console.error('Redis del me error:', error)
     }
 }
+
+// handle 50 request
+const inFlight = new Map<string, Promise<unknown>>();
+
+export async function withSingleflight<T>(key: string, fn: () => Promise<T>): Promise<T> {
+  const existing = inFlight.get(key);
+  if (existing) return existing as Promise<T>;   // menumpang ✈️
+
+  const p = fn();                                 // jadi pemimpin 🚩
+  inFlight.set(key, p);
+  try {
+    return await p;
+  } finally {
+    if (inFlight.get(key) === p) inFlight.delete(key);  // bersih-bersih, hanya janji sendiri
+  }
+}
