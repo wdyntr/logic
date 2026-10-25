@@ -1,24 +1,29 @@
 services:
   logic:
     container_name: logic
-    build: .
+    image: localhost/logic:dev
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "${PORT:-3001}:${PORT:-3001}"
+      - target: 3001
+        published: 3001
+        protocol: tcp
     volumes:
       - ./:/app:Z
-      # Pastikan anonymous volume untuk node_modules mengarah ke /app
       - /app/node_modules
     depends_on:
       - logic-psql
       - redis
-
   logic-psql:
     image: docker.io/library/postgres:16-alpine
     container_name: logic-psql
     restart: unless-stopped
     ports:
-      - "5432:5432"
+         - target: 5432
+           published: 5432
+           protocol: tcp
     environment:
       - POSTGRES_DB=logic-db
       - POSTGRES_USER=root
@@ -29,7 +34,7 @@ services:
   redis:
     image: docker.io/library/redis:7-alpine
     container_name: logic-redis
-    redis_password: root
+    command: ["redis-server", "--requirepass", "root"]
     restart: unless-stopped
 
 volumes:
