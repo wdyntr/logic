@@ -1,12 +1,13 @@
-import express from 'express'
-import cookieParser from 'cookie-parser'
-import cors from 'cors'
-import path from 'path'
-import {env} from './config/env'
-import { homepage, authPage } from './controllers/public.controller'
+import express from "express";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import path from "path";
+import { env } from "./config/env";
+import { homepage, authPage } from "./controllers/public.controller";
+import authRoutes from "./routes/auth.routes";
 
-const app = express()
-const PORT = env.PORT
+const app = express();
+const PORT = env.PORT;
 
 app.use(
   cors({
@@ -23,18 +24,18 @@ app.use(
       "x-csrf-token",
       "Idempotency-key",
     ],
-  })
+  }),
 );
 
-app.use(express.json())
-app.use(cookieParser())
-app.use(express.static(path.join(__dirname, './public')))
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "./public")));
 
-app.get('/', homepage)
-app.get('/auth', authPage)
+app.get("/", homepage);
+app.get("/auth", authPage);
 
-app.set('view engine', 'ejs')
-app.set('views', path.join(__dirname, 'views'))
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
-
-export default app
+app.use("/api/auth", authRoutes);
+export default app;
