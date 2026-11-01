@@ -16,26 +16,36 @@ services:
     depends_on:
       - logic-psql
       - redis
+    logging:
+      driver: k8s-file
+      options:
+        max-size: "5mb"
   logic-psql:
     image: docker.io/library/postgres:16-alpine
     container_name: logic-psql
     restart: unless-stopped
     ports:
-         - target: 5432
-           published: 5432
-           protocol: tcp
+      - target: 5432
+        published: 5432
+        protocol: tcp
     environment:
       - POSTGRES_DB=logic-db
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
     volumes:
       - logic-db:/var/lib/postgresql/data:Z
-
+    logging:
+      driver: k8s-file
+      options:
+        max-size: "5mb"
   redis:
     image: docker.io/library/redis:7-alpine
     container_name: logic-redis
     command: ["redis-server", "--requirepass", "root"]
     restart: unless-stopped
-
+    logging:
+      driver: k8s-file
+      options:
+        max-size: "5mb"
 volumes:
   logic-db:
