@@ -66,7 +66,16 @@ async function callApi(path, method, body, options = {}) {
     if (res.status === 204) {
       data = { message: "No Content" };
     } else if (contentType.includes("application/json")) {
-      data = await res.json();
+      const text = await res.text();
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { message: text };
+        }
+      } else {
+        data = { message: "Response kosong" };
+      }
     } else {
       const text = await res.text();
       data = text ? { message: text } : { message: "Response bukan JSON" };

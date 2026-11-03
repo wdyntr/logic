@@ -113,7 +113,7 @@ describe("PATCH /api/auth/me", () => {
     it("update password", async () => {
         const res = await request(app)
             .patch("/api/auth/me")
-            .send({ password: 'newpass123', currentPassword: 'password123' })
+            .send({ password: 'newpass123', currentPass: 'password123' })
             .set("Cookie", auth.cookie)
             .set("x-csrf-token", auth.csrfToken)
         expect(res.status).toBe(200);

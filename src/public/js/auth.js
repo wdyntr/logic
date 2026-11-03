@@ -26,7 +26,9 @@ async function checkMe() {
     const userEl = document.getElementById("active-user");
     userEl.textContent = "Memuat...";
 
-    const result = await window.api.callApi("/api/auth/me", "GET", null);
+    const result = await window.api.callApi("/api/auth/me", "GET", null, {
+      retry: false,
+    });
 
     if (result && result.status === 200) {
       userEl.textContent = `${result.data.user.name} (${result.data.user.email})`;

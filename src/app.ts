@@ -5,6 +5,7 @@ import path from "path";
 import { env } from "./config/env";
 import { homepage, authPage } from "./controllers/public.controller";
 import authRoutes from "./routes/auth.routes";
+import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 
 const app = express();
 const PORT = env.PORT;
@@ -38,4 +39,9 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api", notFoundHandler);
+// app.use((req, res) => res.status(404).render("404"));
+app.use(errorHandler);
+
 export default app;

@@ -13,7 +13,7 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
   cookieOptions: {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NOE_ENV === "production",
+    secure: process.env.NODE_ENV === "production",
   },
 });
 

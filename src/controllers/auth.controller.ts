@@ -151,7 +151,7 @@ export const me = async (req: AuthRequest, res: Response) => {
 
 export const update = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, password, currentPassword } = req.body;
+    const { name, email, password, currentPass } = req.body;
     const userId = req.userId!;
 
     const user = await prisma.user.findUnique({
@@ -161,10 +161,10 @@ export const update = async (req: AuthRequest, res: Response) => {
     if (!user) throw new AppError("User tidak ditemukan", 404);
 
     if (password) {
-      if (!currentPassword)
+      if (!currentPass)
         throw new AppError("Current password wajib diisi", 422);
 
-      const valid = await bcrypt.compare(currentPassword, user.password);
+      const valid = await bcrypt.compare(currentPass, user.password);
       if (!valid) throw new AppError("Password lama tidak valid", 401);
     }
 
